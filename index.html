@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ancient RPG</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        body {
+            background-color: #0f0f0f;
+            color: #dcdcdc;
+            font-family: 'Verdana', sans-serif;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        h1 {
+            color: #b8860b; /* Золотой заголовок */
+            text-transform: uppercase;
+            text-shadow: 0 0 10px rgba(184, 134, 11, 0.5);
+            margin-bottom: 20px;
+        }
+        .hero-card {
+            width: 250px;
+            height: 350px;
+            background: linear-gradient(180deg, #1a1a1a 0%, #050505 100%);
+            border: 1px solid #333;
+            border-radius: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+            margin-bottom: 25px;
+        }
+        .silhouette {
+            font-size: 180px;
+            opacity: 0.2; /* Эффект тени/силуэта */
+            filter: blur(2px);
+        }
+        .stats-panel {
+            background: #151515;
+            padding: 20px;
+            border-radius: 12px;
+            width: 80%;
+            border: 1px solid #222;
+        }
+        .stat {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 16px;
+        }
+        .label { color: #777; }
+        .value { font-weight: bold; }
+        .hp { color: #ff4747; }
+        .def { color: #47a1ff; }
+        .lvl { color: #ffd700; }
+    </style>
+</head>
+<body>
+
+    <h1>Ancient RPG</h1>
+
+    <div class="hero-card">
+        <div class="silhouette">👤</div>
+    </div>
+
+    <div class="stats-panel">
+        <div class="stat">
+            <span class="label">Уровень:</span>
+            <span class="value lvl">10</span>
+        </div>
+        <div class="stat">
+            <span class="label">Здоровье:</span>
+            <span class="value hp">100 / 100</span>
+        </div>
+        <div class="stat">
+            <span class="label">Защита:</span>
+            <span class="value def">25</span>
+        </div>
+    </div>
+
+    <script>
+        const tg = window.Telegram.WebApp;
+        tg.ready();
+        tg.expand(); // Разворачивает окно на максимум
+    </script>
+</body>
+</html>
