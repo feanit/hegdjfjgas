@@ -2,90 +2,169 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Ancient RPG</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --gold: #d4af37;
+            --dark: #0a0a0a;
+            --card: #151515;
+        }
         body {
-            background-color: #0f0f0f;
-            color: #dcdcdc;
-            font-family: 'Verdana', sans-serif;
+            background-color: var(--dark);
+            color: #e0e0e0;
+            font-family: 'Roboto Mono', monospace;
             margin: 0;
-            padding: 20px;
+            padding: 0;
             display: flex;
             flex-direction: column;
-            align-items: center;
+            height: 100vh;
+            overflow: hidden;
         }
-        h1 {
-            color: #b8860b; /* Золотой заголовок */
-            text-transform: uppercase;
-            text-shadow: 0 0 10px rgba(184, 134, 11, 0.5);
-            margin-bottom: 20px;
+        h1, h2 {
+            font-family: 'Cinzel', serif;
+            color: var(--gold);
+            text-align: center;
+            text-shadow: 0 0 10px rgba(212, 175, 55, 0.3);
         }
+
+        /* Контейнер для вкладок */
+        .content {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: none; /* Прячем все по умолчанию */
+        }
+        .content.active { display: block; }
+
+        /* МЕНЮ */
         .hero-card {
-            width: 250px;
-            height: 350px;
-            background: linear-gradient(180deg, #1a1a1a 0%, #050505 100%);
-            border: 1px solid #333;
-            border-radius: 20px;
+            width: 180px;
+            height: 240px;
+            background: linear-gradient(180deg, #222, #050505);
+            border: 1px solid var(--gold);
+            border-radius: 15px;
+            margin: 0 auto 20px;
             display: flex;
             justify-content: center;
             align-items: center;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.8);
-            margin-bottom: 25px;
+            font-size: 120px;
         }
-        .silhouette {
-            font-size: 180px;
-            opacity: 0.2; /* Эффект тени/силуэта */
-            filter: blur(2px);
+        .stats-grid {
+            background: var(--card);
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid #333;
         }
-        .stats-panel {
-            background: #151515;
-            padding: 20px;
-            border-radius: 12px;
-            width: 80%;
-            border: 1px solid #222;
-        }
-        .stat {
+        .stat-line {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 8px;
+            margin-bottom: 5px;
+        }
+        .val { color: var(--gold); font-weight: bold; }
+
+        /* ИНВЕНТАРЬ */
+        .inv-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .inv-slot {
+            aspect-ratio: 1/1;
+            background: #222;
+            border: 1px dashed #444;
+            border-radius: 8px;
+        }
+
+        /* ЛОКАЦИИ */
+        .loc-btn {
+            background: var(--card);
+            border: 1px solid #444;
+            color: white;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 10px;
+            width: 100%;
+            text-align: left;
             font-size: 16px;
         }
-        .label { color: #777; }
-        .value { font-weight: bold; }
-        .hp { color: #ff4747; }
-        .def { color: #47a1ff; }
-        .lvl { color: #ffd700; }
+        .loc-btn:active { background: #222; border-color: var(--gold); }
+
+        /* НИЖНЕЕ МЕНЮ */
+        .nav-bar {
+            background: #111;
+            display: flex;
+            justify-content: space-around;
+            padding: 15px 0;
+            border-top: 1px solid #333;
+        }
+        .nav-item {
+            color: #777;
+            text-decoration: none;
+            font-size: 12px;
+            text-transform: uppercase;
+            cursor: pointer;
+        }
+        .nav-item.active {
+            color: var(--gold);
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
 
-    <h1>Ancient RPG</h1>
-
-    <div class="hero-card">
-        <div class="silhouette">👤</div>
+    <div id="tab-menu" class="content active">
+        <h1>Ancient RPG</h1>
+        <div class="hero-card">👤</div>
+        <div class="stats-grid">
+            <div class="stat-line"><span>Уровень</span> <span class="val">1</span></div>
+            <div class="stat-line"><span>Здоровье</span> <span class="val" style="color: #ff4747;">100/100</span></div>
+            <div class="stat-line"><span>Защита</span> <span class="val" style="color: #47a1ff;">15</span></div>
+            <div class="stat-line"><span>Монеты</span> <span class="val" style="color: #ffd700;">500 🪙</span></div>
+        </div>
     </div>
 
-    <div class="stats-panel">
-        <div class="stat">
-            <span class="label">Уровень:</span>
-            <span class="value lvl">10</span>
+    <div id="tab-inv" class="content">
+        <h2>Инвентарь</h2>
+        <div class="inv-grid">
+            <div class="inv-slot"></div><div class="inv-slot"></div>
+            <div class="inv-slot"></div><div class="inv-slot"></div>
+            <div class="inv-slot"></div><div class="inv-slot"></div>
+            <div class="inv-slot"></div><div class="inv-slot"></div>
         </div>
-        <div class="stat">
-            <span class="label">Здоровье:</span>
-            <span class="value hp">100 / 100</span>
-        </div>
-        <div class="stat">
-            <span class="label">Защита:</span>
-            <span class="value def">25</span>
-        </div>
+    </div>
+
+    <div id="tab-loc" class="content">
+        <h2>Выбор локации</h2>
+        <button class="loc-btn" onclick="alert('Вы вошли в Лес. Враг: Гоблин (Слаб)')">🌲 Лес</button>
+        <button class="loc-btn" onclick="alert('Вы вошли в Туманные Равнины. Враг: Скелет')">🌫 Туманные Равнины</button>
+        <button class="loc-btn" onclick="alert('Вы вошли в Руины. Враг: Древний Страж')">🏛 Древние руины</button>
+    </div>
+
+    <div class="nav-bar">
+        <div class="nav-item active" onclick="openTab('menu', this)">Меню</div>
+        <div class="nav-item" onclick="openTab('inv', this)">Инвентарь</div>
+        <div class="nav-item" onclick="openTab('loc', this)">Локации</div>
     </div>
 
     <script>
         const tg = window.Telegram.WebApp;
         tg.ready();
-        tg.expand(); // Разворачивает окно на максимум
+        tg.expand();
+
+        function openTab(tabName, el) {
+            // Прячем все вкладки
+            document.querySelectorAll('.content').forEach(tab => tab.classList.remove('active'));
+            // Снимаем выделение с кнопок
+            document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+            
+            // Показываем нужную
+            document.getElementById('tab-' + tabName).classList.add('active');
+            el.classList.add('active');
+        }
     </script>
 </body>
 </html>
