@@ -6,56 +6,61 @@
     <title>Ancient RPG</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        :root { --gold: #d4af37; --dark: #0a0a0a; --red: #ff4747; --blue: #47a1ff; }
-        body { background: var(--dark); color: #e0e0e0; font-family: sans-serif; margin: 0; padding-bottom: 70px; }
-        .header { text-align: center; color: var(--gold); padding: 10px; font-weight: bold; border-bottom: 1px solid #333; }
-        .page { display: none; padding: 15px; }
+        :root { --gold: #d4af37; --dark: #0a0a0a; --red: #ff4747; --blue: #47a1ff; --green: #44ff44; }
+        body { background: var(--dark); color: #e0e0e0; font-family: sans-serif; margin: 0; padding-bottom: 80px; }
+        .header { text-align: center; color: var(--gold); padding: 15px; font-weight: bold; border-bottom: 1px solid #333; letter-spacing: 2px; }
+        .page { display: none; padding: 15px; animation: fadeIn 0.2s; }
         .page.active { display: block; }
-        .card { background: #1a1a1a; border: 1px solid #333; padding: 15px; border-radius: 10px; margin-bottom: 10px; }
-        .btn { background: var(--gold); color: black; border: none; padding: 12px; width: 100%; border-radius: 5px; font-weight: bold; margin: 5px 0; cursor: pointer; }
-        .nav { position: fixed; bottom: 0; width: 100%; background: #111; display: flex; border-top: 1px solid #333; font-size: 10px; }
-        .nav div { flex: 1; text-align: center; padding: 15px 5px; color: #666; text-transform: uppercase; }
-        .nav div.active { color: var(--gold); border-top: 2px solid var(--gold); }
-        .item-row { padding: 10px; border-bottom: 1px solid #222; display: flex; justify-content: space-between; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .card { background: #161616; border: 1px solid #333; padding: 15px; border-radius: 12px; margin-bottom: 15px; }
+        .btn { background: var(--gold); color: black; border: none; padding: 14px; width: 100%; border-radius: 8px; font-weight: bold; cursor: pointer; margin: 5px 0; }
+        .nav { position: fixed; bottom: 0; width: 100%; background: #111; display: flex; border-top: 1px solid #333; }
+        .nav div { flex: 1; text-align: center; padding: 18px 5px; color: #555; font-size: 11px; text-transform: uppercase; }
+        .nav div.active { color: var(--gold); font-weight: bold; border-top: 2px solid var(--gold); }
+        .item-row { padding: 12px; border-bottom: 1px solid #222; display: flex; justify-content: space-between; cursor: pointer; }
+        #log { background: #000; height: 120px; overflow-y: auto; font-size: 13px; padding: 10px; border-radius: 8px; border: 1px solid #333; margin: 10px 0; color: #aaa; }
     </style>
 </head>
 <body>
     <div class="header">ANCIENT RPG</div>
 
     <div id="menu-page" class="page active">
-        <div class="card" id="stats"></div>
+        <div class="card" id="stats-display"></div>
     </div>
 
     <div id="inv-page" class="page">
-        <h3>ИНВЕНТАРЬ</h3>
+        <h3>РЮКЗАК</h3>
         <div id="inv-list" class="card"></div>
-        <div id="item-info" class="card" style="display:none;">
-            <h4 id="item-name"></h4>
-            <p id="item-stat"></p>
-            <button class="btn" id="item-action"></button>
-            <button class="btn" style="background:#444;color:#fff" onclick="document.getElementById('item-info').style.display='none'">Закрыть</button>
+        <div id="item-modal" class="card" style="display:none; border-color: var(--gold);">
+            <h4 id="m-name"></h4>
+            <p id="m-stat" style="color: var(--blue)"></p>
+            <button class="btn" id="m-btn"></button>
+            <button class="btn" style="background:#333; color:#ccc" onclick="closeModal()">Закрыть</button>
         </div>
     </div>
 
     <div id="town-page" class="page">
         <h3>ЦЕНТРАЛЬНАЯ ПЛОЩАДЬ</h3>
         <button class="btn" onclick="openShop()">⚖️ Торговая лавка</button>
-        <button class="btn" style="opacity: 0.5">⚒️ Крафт (Скоро)</button>
+        <button class="btn" style="opacity: 0.4">⚒️ Крафт (Закрыто)</button>
         <button class="btn" onclick="openQuests()">📜 Квесты</button>
 
-        <div id="sub-town" class="card" style="display:none; margin-top:20px;">
-            <div id="sub-content"></div>
-            <button class="btn" style="background:#333;color:#eee" onclick="this.parentElement.style.display='none'">Назад</button>
+        <div id="town-sub" class="card" style="display:none; margin-top:15px;">
+            <div id="town-content"></div>
+            <button class="btn" style="background:#222; color:#fff" onclick="this.parentElement.style.display='none'">Назад</button>
         </div>
     </div>
 
     <div id="loc-page" class="page">
         <div id="loc-select">
-            <button class="btn" onclick="startFight('Лес', 50, 10, 30)">В лес (Слайм)</button>
+            <div class="card">
+                <h4>🌲 Зачарованный Лес</h4>
+                <button class="btn" onclick="fight('Лес', 45, 8, 25)">Охотиться на Слаймов</button>
+            </div>
         </div>
-        <div id="battle" style="display:none;">
-            <p id="log" style="font-size:12px; height:100px; overflow:auto; background:#000; padding:5px;"></p>
-            <button id="save-btn" class="btn" style="display:none;" onclick="saveAll()">СОХРАНИТЬ И ВЫЙТИ</button>
+        <div id="battle-ui" style="display:none;">
+            <div id="log"></div>
+            <button id="exit-btn" class="btn" style="display:none;" onclick="saveAndExit()">СОХРАНИТЬ И ВЫЙТИ</button>
         </div>
     </div>
 
@@ -70,22 +75,39 @@
         const tg = window.Telegram.WebApp;
         const urlP = new URLSearchParams(window.location.search);
 
+        // Декодируем данные
+        const rawInv = decodeURIComponent(urlP.get('inv') || '[]');
+        const rawQ = decodeURIComponent(urlP.get('q') || '{}');
+
         let p = {
             lvl: parseInt(urlP.get('lvl')) || 1,
             atk: parseInt(urlP.get('atk')) || 12,
             def: parseInt(urlP.get('def')) || 15,
             coins: parseInt(urlP.get('coins')) || 0,
-            inv: JSON.parse(urlP.get('inv') || '[]'),
-            q: JSON.parse(urlP.get('q') || '{}')
+            inv: JSON.parse(rawInv),
+            q: JSON.parse(rawQ)
         };
 
         function draw() {
-            document.getElementById('stats').innerHTML = `Уровень: ${p.lvl}<br>Атака: ${p.atk}<br>Защита: ${p.def}<br>Золото: ${p.coins}`;
+            // Считаем бонус атаки от надетых вещей
+            let bonusAtk = 0;
+            p.inv.forEach(i => { if(i.equipped && i.slot === 'weapon') bonusAtk += i.stat; });
+
+            document.getElementById('stats-display').innerHTML = `
+                <p>Уровень: <b>${p.lvl}</b></p>
+                <p>Атака: <b style="color:var(--red)">${p.atk + bonusAtk}</b> (${p.atk}+${bonusAtk})</p>
+                <p>Защита: <b style="color:var(--blue)">${p.def}</b></p>
+                <p>Золото: <b style="color:var(--gold)">${p.coins} 🪙</b></p>
+            `;
+
             let h = '';
             p.inv.forEach((it, i) => {
-                h += `<div class="item-row" onclick="showItem(${i})"><span>${it.equipped ? '[E] ' : ''}${it.n}</span> <span>${it.stat}</span></div>`;
+                h += `<div class="item-row" onclick="openItem(${i})">
+                        <span>${it.equipped ? '<b style="color:var(--green)">[E]</b> ' : ''}${it.n}</span>
+                        <span style="color:var(--blue)">+${it.stat}</span>
+                      </div>`;
             });
-            document.getElementById('inv-list').innerHTML = h || 'Пусто';
+            document.getElementById('inv-list').innerHTML = h || 'Рюкзак пуст';
         }
 
         function tab(id) {
@@ -95,69 +117,78 @@
             document.getElementById('n-' + id.split('-')[0]).classList.add('active');
         }
 
-        function showItem(i) {
+        function openItem(i) {
             let it = p.inv[i];
-            document.getElementById('item-info').style.display = 'block';
-            document.getElementById('item-name').innerText = it.n;
-            document.getElementById('item-stat').innerText = `Тип: ${it.slot} | Бонус: +${it.stat}`;
-            let btn = document.getElementById('item-action');
-            btn.innerText = it.equipped ? "Снять" : "Надеть";
+            document.getElementById('item-modal').style.display = 'block';
+            document.getElementById('m-name').innerText = it.n;
+            document.getElementById('m-stat').innerText = `Бонус к атаке: +${it.stat}`;
+            let btn = document.getElementById('m-btn');
+            btn.innerText = it.equipped ? "СНЯТЬ" : "НАДЕТЬ";
             btn.onclick = () => {
-                if(!it.equipped) p.inv.forEach(x => { if(x.slot == it.slot) x.equipped = false; });
+                if(!it.equipped) p.inv.forEach(x => { if(x.slot === it.slot) x.equipped = false; });
                 it.equipped = !it.equipped;
-                draw();
-                document.getElementById('item-info').style.display = 'none';
+                draw(); closeModal();
             };
         }
 
+        function closeModal() { document.getElementById('item-modal').style.display = 'none'; }
+
         function openShop() {
-            let div = document.getElementById('sub-town');
-            div.style.display = 'block';
-            document.getElementById('sub-content').innerHTML = `
-                <h4>ЛАВКА</h4>
-                <button class="btn" onclick="buy('Стальной Меч', 10, 100)">Купить Меч (100 🪙)</button>
-                <button class="btn" onclick="alert('Продажа: выберите предмет в рюкзаке')">Продать</button>
-            `;
-        }
-
-        function buy(n, s, c) {
-            if(p.coins >= c) { p.coins -= c; p.inv.push({n:n, stat:s, slot:'weapon', equipped:false}); draw(); alert('Куплено!'); }
-            else alert('Мало денег!');
-        }
-
-        function openQuests() {
-            let div = document.getElementById('sub-town');
-            div.style.display = 'block';
-            let q = p.q.coins_task;
-            let status = q.done ? "ВЫПОЛНЕНО" : `${p.coins}/${q.goal}`;
-            document.getElementById('sub-content').innerHTML = `
-                <h4>КВЕСТЫ</h4>
+            let sub = document.getElementById('town-sub');
+            sub.style.display = 'block';
+            document.getElementById('town-content').innerHTML = `
+                <h4>ЛАВКА ЭКИПИРОВКИ</h4>
                 <div class="card">
-                    <b>Накопить 150 монет</b><br>Прогресс: ${status}
-                    ${(!q.done && p.coins >= 150) ? '<button class="btn" onclick="claimQuest()">Забрать награду</button>' : ''}
+                    <p><b>Стальной Гладиус</b> (+15 АТК)</p>
+                    <button class="btn" onclick="buy('Стальной Гладиус', 15, 120)">Купить за 120 🪙</button>
                 </div>
             `;
         }
 
-        function claimQuest() {
+        function buy(n, s, c) {
+            if(p.coins >= c) {
+                p.coins -= c;
+                p.inv.push({n: n, stat: s, slot: 'weapon', equipped: false});
+                draw(); alert('Успешно куплено!');
+            } else { alert('Недостаточно монет!'); }
+        }
+
+        function openQuests() {
+            let sub = document.getElementById('town-sub');
+            sub.style.display = 'block';
+            let q = p.q.coins_task;
+            let status = q.done ? "<b style='color:var(--green)'>ВЫПОЛНЕНО</b>" : `${p.coins} / ${q.goal}`;
+            document.getElementById('town-content').innerHTML = `
+                <h4>📜 ТЕКУЩИЕ ЗАДАНИЯ</h4>
+                <div class="card">
+                    <p><b>Первое накопление</b></p>
+                    <p><small>Соберите 150 монет, чтобы доказать свою состоятельность.</small></p>
+                    <p>Прогресс: ${status}</p>
+                    ${(!q.done && p.coins >= q.goal) ? '<button class="btn" onclick="claim()">Забрать награду (+1 LVL, +50 🪙)</button>' : ''}
+                </div>
+            `;
+        }
+
+        function claim() {
             p.q.coins_task.done = true;
             p.coins += 50; p.lvl += 1;
             draw(); openQuests();
         }
 
-        function startFight(n, h, a, r) {
+        function fight(n, h, a, r) {
             document.getElementById('loc-select').style.display = 'none';
-            document.getElementById('battle').style.display = 'block';
-            let log = document.getElementById('log');
-            log.innerHTML = "Бой начался!<br>";
+            document.getElementById('battle-ui').style.display = 'block';
+            let l = document.getElementById('log');
+            l.innerHTML = `Начался бой с существом: ${n}...<br>`;
+            
             setTimeout(() => {
                 p.coins += r;
-                log.innerHTML += `Победа! +${r} монет.`;
-                document.getElementById('save-btn').style.display = 'block';
-            }, 1000);
+                l.innerHTML += `<b style="color:var(--green)">Победа! Получено ${r} 🪙</b><br>`;
+                document.getElementById('exit-btn').style.display = 'block';
+            }, 1200);
         }
 
-        function saveAll() {
+        function saveAndExit() {
             tg.sendData(JSON.stringify(p));
             tg.close();
         }
