@@ -1,32 +1,38 @@
 <!DOCTYPE html>
-<html>
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Ancient RPG</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        :root { --gold: #d4af37; --dark: #0a0a0a; --red: #ff4747; --green: #44ff44; }
-        body { background: var(--dark); color: #e0e0e0; font-family: sans-serif; margin: 0; padding-bottom: 80px; }
-        .page { display: none; padding: 20px; }
+        :root { --gold: #d4af37; --dark: #0a0a0a; --red: #ff4747; --green: #44ff44; --blue: #47a1ff; }
+        body { background: var(--dark); color: #e0e0e0; font-family: -apple-system, sans-serif; margin: 0; padding-bottom: 80px; overflow-x: hidden; }
+        
+        .page { display: none; padding: 20px; animation: fadeIn 0.3s; }
         .page.active { display: block; }
-        .card { background: #1a1a1a; border: 1px solid #333; padding: 15px; border-radius: 10px; margin-bottom: 10px; }
-        .btn { background: var(--gold); color: black; border: none; padding: 12px; width: 100%; border-radius: 5px; font-weight: bold; margin-top: 10px; }
-        .enemy-btn { background: #222; color: #fff; border: 1px solid #444; padding: 12px; width: 100%; margin-top: 8px; text-align: left; border-radius: 8px; }
-        .nav { position: fixed; bottom: 0; width: 100%; background: #111; display: flex; border-top: 1px solid #333; }
-        .nav div { flex: 1; text-align: center; padding: 18px; color: #666; font-size: 11px; text-transform: uppercase; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        .card { background: #1a1a1a; border: 1px solid #333; padding: 15px; border-radius: 12px; margin-bottom: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
+        .btn { background: var(--gold); color: black; border: none; padding: 14px; width: 100%; border-radius: 8px; font-weight: bold; font-size: 14px; cursor: pointer; }
+        .enemy-btn { background: #222; color: #fff; border: 1px solid #444; padding: 12px; width: 100%; margin-top: 8px; text-align: left; border-radius: 10px; position: relative; }
+        
+        .nav { position: fixed; bottom: 0; width: 100%; background: #111; display: flex; border-top: 1px solid #333; z-index: 1000; }
+        .nav div { flex: 1; text-align: center; padding: 18px 0; color: #666; font-size: 10px; text-transform: uppercase; letter-spacing: 1px; }
         .nav div.active { color: var(--gold); font-weight: bold; border-top: 2px solid var(--gold); }
-        #log { background: #000; height: 160px; overflow-y: auto; font-size: 13px; padding: 10px; border: 1px solid #333; margin: 10px 0; border-radius: 5px; color: #bbb; }
-        .hp-bar { width: 100%; background: #333; height: 8px; border-radius: 4px; margin: 5px 0 10px; overflow: hidden; }
-        .hp-fill { height: 100%; background: var(--red); transition: 0.3s; width: 100%; }
+
+        #log { background: #000; height: 160px; overflow-y: auto; font-size: 13px; padding: 12px; border: 1px solid #333; border-radius: 8px; margin: 15px 0; color: #ccc; line-height: 1.4; }
+        .hp-bar { width: 100%; background: #222; height: 10px; border-radius: 5px; margin: 6px 0 12px; border: 1px solid #333; overflow: hidden; }
+        .hp-fill { height: 100%; background: var(--red); transition: 0.3s ease-out; width: 100%; }
+        
         .inv-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
-        .inv-slot { aspect-ratio: 1; background: #111; border: 1px dashed #444; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 20px; }
+        .inv-slot { aspect-ratio: 1; background: #111; border: 1px dashed #444; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 20px; }
     </style>
 </head>
 <body>
 
     <div id="menu-page" class="page active">
-        <h2 style="color: var(--gold)">ГЕРОЙ</h2>
+        <h2 style="color: var(--gold)">ПЕРСОНАЖ</h2>
         <div class="card" id="stats-display"></div>
     </div>
 
@@ -34,7 +40,7 @@
         <h2 style="color: var(--gold)">ИНВЕНТАРЬ</h2>
         <div class="inv-grid">
             <div class="inv-slot" style="border-style: solid; border-color: var(--gold);">⚔️</div>
-            <div class="inv-slot"></div><div class="inv-slot"></div><div class="inv-slot"></div>
+            <div class="inv-slot">🛡️</div><div class="inv-slot"></div><div class="inv-slot"></div>
             <div class="inv-slot"></div><div class="inv-slot"></div><div class="inv-slot"></div><div class="inv-slot"></div>
         </div>
     </div>
@@ -42,24 +48,24 @@
     <div id="loc-page" class="page">
         <div id="loc-select">
             <h2 style="color: var(--gold)">ЛОКАЦИИ</h2>
-            <div class="card"><h3>🌲 Зачарованный Лес</h3><button class="btn" onclick="enterLoc('forest')">Войти</button></div>
-            <div class="card"><h3>🏛 Залы Мертвых</h3><button class="btn" onclick="enterLoc('ruins')">Войти</button></div>
+            <div class="card"><h3>🌲 Зачарованный Лес</h3><button class="btn" onclick="enterLoc('forest')">ВОЙТИ</button></div>
+            <div class="card"><h3>🏛 Залы Мертвых</h3><button class="btn" onclick="enterLoc('ruins')">ВОЙТИ</button></div>
         </div>
 
         <div id="enemy-view" style="display:none;">
-            <button onclick="exitLoc()" style="color: var(--gold); background:none; border:none; padding:10px 0;">⬅ Назад</button>
+            <button onclick="exitLoc()" style="color: var(--gold); background:none; border:none; padding:10px 0; cursor:pointer;">⬅ НАЗАД</button>
             <h3 id="cur-loc-name"></h3>
             <div id="enemies-list"></div>
         </div>
 
         <div id="battle-view" style="display:none;">
-            <h3 id="battle-title">БОЙ</h3>
+            <h3 id="battle-title" style="text-align:center;">БИТВА</h3>
             <div class="hp-bar"><div id="enemy-hp" class="hp-fill"></div></div>
             <div class="hp-bar"><div id="player-hp" class="hp-fill" style="background:var(--green)"></div></div>
             <div id="log"></div>
             <div id="battle-res" style="display:none; text-align:center;">
                 <h3 id="res-txt"></h3>
-                <button class="btn" id="finish-btn" onclick="saveAndExit()">СОХРАНИТЬ И ВЫЙТИ</button>
+                <button class="btn" onclick="saveAndExit()">СОХРАНИТЬ И ВЫЙТИ</button>
             </div>
         </div>
     </div>
@@ -78,8 +84,8 @@
         let p = {
             lvl: parseInt(urlP.get('lvl')) || 1,
             atk: parseInt(urlP.get('atk')) || 12,
-            coins: parseInt(urlP.get('coins')) || 0,
             def: parseInt(urlP.get('def')) || 15,
+            coins: parseInt(urlP.get('coins')) || 0,
             hp: 100, maxHp: 100
         };
 
@@ -87,7 +93,7 @@
             document.getElementById('stats-display').innerHTML = `
                 <p>Уровень: <b>${p.lvl}</b></p>
                 <p>Атака: <b style="color:var(--red)">${p.atk} ⚔️</b></p>
-                <p>Защита: <b>${p.def} 🛡️</b></p>
+                <p>Защита: <b style="color:var(--blue)">${p.def} 🛡️</b></p>
                 <p>Золото: <b style="color:var(--gold)">${p.coins} 🪙</b></p>
             `;
         }
@@ -101,8 +107,8 @@
         }
 
         const locs = {
-            forest: { n: "Лес", e: [{n: "Слайм", h: 45, a: 6, r: 20}, {n: "Волк", h: 85, a: 12, r: 55}] },
-            ruins: { n: "Руины", e: [{n: "Скелет", h: 120, a: 20, r: 120}, {n: "Лич", h: 300, a: 40, r: 450}] }
+            forest: { n: "Зачарованный Лес", e: [{n: "Слайм", h: 45, a: 6, r: 20}, {n: "Лесной Волк", h: 90, a: 13, r: 55}] },
+            ruins: { n: "Залы Мертвых", e: [{n: "Скелет", h: 140, a: 22, r: 130}, {n: "Лич", h: 350, a: 48, r: 500}] }
         };
 
         function enterLoc(k) {
@@ -131,29 +137,34 @@
             let ch = h, cp = p.hp;
 
             let itv = setInterval(() => {
+                // Твой ход
                 let d = Math.floor(p.atk * (0.8 + Math.random()*0.5));
                 ch -= d;
                 l.innerHTML += `Ты нанес ${d} урона. Враг: ${Math.max(0, ch)} HP<br>`;
                 document.getElementById('enemy-hp').style.width = (ch/h*100)+'%';
+                
                 if(ch <= 0) {
                     clearInterval(itv);
-                    p.lvl++; p.coins += r; p.atk += 3;
+                    p.lvl++; p.coins += r; p.atk += 3; p.def += 1; // Прокачка всех статов
                     document.getElementById('battle-res').style.display = 'block';
-                    document.getElementById('res-txt').innerHTML = `ПОБЕДА!<br><small>+${r} 🪙</small>`;
+                    document.getElementById('res-txt').innerHTML = `ПОБЕДА!<br><small>+${r} 🪙 | +1 🛡️</small>`;
                     return;
                 }
-                let ed = Math.max(2, a - Math.floor(p.def/5));
+
+                // Ход врага (УЧИТЫВАЕМ ДЕФЕНС)
+                let ed = Math.max(2, a - Math.floor(p.def/4));
                 cp -= ed;
-                l.innerHTML += `<span style="color:var(--red)">Урон врага: ${ed}. Твоё HP: ${Math.max(0, cp)}</span><br>`;
+                l.innerHTML += `<span style="color:var(--red)">${n} ударил на ${ed}. Твое HP: ${Math.max(0, cp)}</span><br>`;
                 document.getElementById('player-hp').style.width = (cp/p.maxHp*100)+'%';
                 l.scrollTop = l.scrollHeight;
+
                 if(cp <= 0) { clearInterval(itv); tg.close(); }
             }, 800);
         }
 
         function saveAndExit() {
-            // Самый надежный способ для GitHub Pages
-            tg.sendData(JSON.stringify({lvl: p.lvl, coins: p.coins, atk: p.atk}));
+            // Отправляем все статы боту (включая защиту)
+            tg.sendData(JSON.stringify({lvl: p.lvl, coins: p.coins, atk: p.atk, def: p.def}));
         }
 
         draw();
