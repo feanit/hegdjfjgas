@@ -6,32 +6,35 @@
     <title>Ancient RPG</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        :root { --gold: #d4af37; --dark: #0a0a0a; --red: #ff4747; --green: #44ff44; }
-        body { background: var(--dark); color: #e0e0e0; font-family: -apple-system, BlinkMacSystemFont, sans-serif; margin: 0; padding-bottom: 80px; overflow-x: hidden; }
+        :root { --gold: #d4af37; --dark: #0a0a0a; --red: #ff4747; --green: #44ff44; --gray: #222; }
+        body { background: var(--dark); color: #e0e0e0; font-family: 'Segoe UI', Roboto, sans-serif; margin: 0; padding-bottom: 90px; overflow-x: hidden; }
         
+        /* Страницы */
         .page { display: none; padding: 20px; animation: fadeIn 0.3s; }
         .page.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-        .card { background: #1a1a1a; border: 1px solid #333; padding: 15px; border-radius: 12px; margin-bottom: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
-        .btn { background: var(--gold); color: black; border: none; padding: 14px; width: 100%; border-radius: 8px; font-weight: bold; font-size: 14px; cursor: pointer; }
-        .enemy-btn { background: #222; color: #fff; border: 1px solid #444; padding: 12px; width: 100%; margin-top: 10px; text-align: left; border-radius: 10px; position: relative; }
+        /* Карточки и кнопки */
+        .card { background: #161616; border: 1px solid #333; padding: 18px; border-radius: 14px; margin-bottom: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.6); }
+        .btn { background: var(--gold); color: black; border: none; padding: 14px; width: 100%; border-radius: 10px; font-weight: bold; font-size: 14px; cursor: pointer; transition: 0.2s; }
+        .btn:active { transform: scale(0.98); opacity: 0.8; }
+        .enemy-btn { background: var(--gray); color: #fff; border: 1px solid #444; padding: 15px; width: 100%; margin-top: 10px; text-align: left; border-radius: 12px; position: relative; }
         
         /* Инвентарь */
         .inv-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 10px; }
-        .inv-slot { aspect-ratio: 1/1; background: #151515; border: 1px dashed #444; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 24px; }
+        .inv-slot { aspect-ratio: 1/1; background: #0f0f0f; border: 1px dashed #444; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 24px; color: #555; }
 
         /* Навигация */
         .nav { position: fixed; bottom: 0; width: 100%; background: #111; display: flex; border-top: 1px solid #333; z-index: 1000; padding-bottom: env(safe-area-inset-bottom); }
-        .nav div { flex: 1; text-align: center; padding: 18px 0; color: #666; font-size: 10px; text-transform: uppercase; letter-spacing: 1px; transition: 0.3s; }
-        .nav div.active { color: var(--gold); font-weight: bold; }
+        .nav div { flex: 1; text-align: center; padding: 18px 0; color: #555; font-size: 10px; text-transform: uppercase; letter-spacing: 1px; transition: 0.3s; }
+        .nav div.active { color: var(--gold); font-weight: bold; border-top: 2px solid var(--gold); }
 
-        /* Боевка */
-        #log { background: #000; height: 180px; overflow-y: auto; font-size: 13px; padding: 12px; border: 1px solid #333; border-radius: 8px; margin: 15px 0; font-family: 'Courier New', monospace; color: #ccc; }
-        .hp-bar { width: 100%; background: #222; height: 10px; border-radius: 5px; margin: 6px 0 12px; border: 1px solid #333; }
-        .hp-fill { height: 100%; background: var(--red); transition: 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.28); width: 100%; border-radius: 5px; }
+        /* Боевой экран */
+        #log { background: #000; height: 160px; overflow-y: auto; font-size: 13px; padding: 12px; border: 1px solid #333; border-radius: 8px; margin: 15px 0; font-family: 'Consolas', monospace; color: #aaa; line-height: 1.4; }
+        .hp-bar { width: 100%; background: #222; height: 10px; border-radius: 5px; margin: 6px 0 12px; border: 1px solid #333; overflow: hidden; }
+        .hp-fill { height: 100%; background: var(--red); transition: 0.4s ease-out; width: 100%; }
         
-        .result-overlay { display: none; text-align: center; padding: 10px; background: rgba(26,26,26,0.9); border-radius: 10px; border: 1px solid var(--gold); }
+        .result-overlay { display: none; text-align: center; padding: 15px; background: #1a1a1a; border-radius: 12px; border: 1px solid var(--gold); margin-top: 10px; }
     </style>
 </head>
 <body>
@@ -45,9 +48,11 @@
     <div id="inv-page" class="page">
         <h2 style="color: var(--gold)">ИНВЕНТАРЬ</h2>
         <div class="inv-grid">
-            <div class="inv-slot">⚔️</div><div class="inv-slot">🛡️</div><div class="inv-slot"></div><div class="inv-slot"></div>
+            <div class="inv-slot" style="color:white; border-style: solid;">⚔️</div>
+            <div class="inv-slot"></div><div class="inv-slot"></div><div class="inv-slot"></div>
             <div class="inv-slot"></div><div class="inv-slot"></div><div class="inv-slot"></div><div class="inv-slot"></div>
         </div>
+        <p style="font-size: 10px; color: #555; text-align: center; margin-top: 20px;">Предметы будут доступны в следующих версиях</p>
     </div>
 
     <div id="loc-page" class="page">
@@ -55,39 +60,43 @@
             <h2 style="color: var(--gold)">ЛОКАЦИИ</h2>
             <div class="card">
                 <h3>🌲 Зачарованный Лес</h3>
-                <button class="btn" onclick="enterLoc('forest')">Войти в лес</button>
+                <p style="font-size: 12px; color: #777;">Монстры: Слизь, Волк</p>
+                <button class="btn" onclick="enterLoc('forest')">ИССЛЕДОВАТЬ</button>
             </div>
             <div class="card">
                 <h3>🏛 Залы Мертвых</h3>
-                <button class="btn" onclick="enterLoc('ruins')">Войти в руины</button>
+                <p style="font-size: 12px; color: #777;">Монстры: Скелет, Лич</p>
+                <button class="btn" onclick="enterLoc('ruins')">ИССЛЕДОВАТЬ</button>
             </div>
         </div>
 
         <div id="enemy-view" style="display:none;">
-            <button onclick="exitLoc()" style="color: var(--gold); background: none; border: none; padding: 10px 0; cursor: pointer;">⬅ К списку локаций</button>
+            <button onclick="exitLoc()" style="color: var(--gold); background: none; border: none; padding: 10px 0; cursor: pointer; font-weight: bold;">⬅ НАЗАД К КАРТАМ</button>
             <h3 id="cur-loc-name"></h3>
             <div id="enemies-list"></div>
         </div>
 
         <div id="battle-view" style="display:none;">
-            <h3 id="enemy-title" style="text-align:center;">БИТВА</h3>
+            <h3 id="enemy-title" style="text-align:center; letter-spacing: 2px;">БОЙ</h3>
+            
             <div style="font-size: 11px; color: #888;">ВРАГ</div>
             <div class="hp-bar"><div id="enemy-hp" class="hp-fill"></div></div>
-            <div style="font-size: 11px; color: #888;">ТВОЁ ЗДОРОВЬЕ</div>
+            
+            <div style="font-size: 11px; color: #888;">ВАШЕ ЗДОРОВЬЕ</div>
             <div class="hp-bar"><div id="player-hp" class="hp-fill" style="background: var(--green)"></div></div>
             
             <div id="log"></div>
             
             <div id="battle-result" class="result-overlay">
                 <h3 id="result-text"></h3>
-                <button class="btn" onclick="finishBattle()">ЗАКОНЧИТЬ И ВЕРНУТЬСЯ</button>
+                <button class="btn" onclick="finishBattle()">ЗАКОНЧИТЬ БОЙ</button>
             </div>
         </div>
     </div>
 
     <div class="nav">
         <div id="nav-menu" class="active" onclick="tab('menu-page')">Герой</div>
-        <div id="nav-inv" onclick="tab('inv-page')">Инвентарь</div>
+        <div id="nav-inv" onclick="tab('inv-page')">Рюкзак</div>
         <div id="nav-loc" onclick="tab('loc-page')">Поход</div>
     </div>
 
@@ -97,8 +106,8 @@
 
         const urlParams = new URLSearchParams(window.location.search);
         
-        // Данные игрока
-        let p = {
+        // --- ПЕРЕМЕННЫЕ ИГРОКА ---
+        let player = {
             id: urlParams.get('id'),
             lvl: parseInt(urlParams.get('lvl')) || 1,
             atk: parseInt(urlParams.get('atk')) || 12,
@@ -108,48 +117,49 @@
             maxHp: 100
         };
 
-        const world = {
+        const locData = {
             forest: { n: "Зачарованный Лес", e: [
-                {n: "Слизь", h: 45, a: 5, r: 20},
-                {n: "Лесной Волк", h: 80, a: 10, r: 55}
+                {n: "Слизь", h: 40, a: 5, r: 15},
+                {n: "Волк", h: 80, a: 11, r: 50}
             ]},
             ruins: { n: "Залы Мертвых", e: [
-                {n: "Скелет", h: 130, a: 18, r: 125},
-                {n: "Древний Лич", h: 300, a: 35, r: 450}
+                {n: "Скелет", h: 130, a: 19, r: 130},
+                {n: "Лич", h: 280, a: 38, r: 500}
             ]}
         };
 
-        // Рендер статов в меню
+        // Обновить статы на экране Героя
         function drawStats() {
             document.getElementById('stats-display').innerHTML = `
-                <div style="display:flex; justify-content:space-between; margin-bottom:10px;"><span>Уровень:</span> <b>${p.lvl}</b></div>
-                <div style="display:flex; justify-content:space-between; margin-bottom:10px;"><span>Атака:</span> <b style="color:var(--red)">${p.atk} ⚔️</b></div>
-                <div style="display:flex; justify-content:space-between; margin-bottom:10px;"><span>Защита:</span> <b style="color:#47a1ff">${p.def} 🛡️</b></div>
-                <div style="display:flex; justify-content:space-between;"><span>Золото:</span> <b style="color:var(--gold)">${p.coins} 🪙</b></div>
+                <div style="display:flex; justify-content:space-between; margin-bottom:8px;"><span>Уровень</span> <b>${player.lvl}</b></div>
+                <div style="display:flex; justify-content:space-between; margin-bottom:8px;"><span>Атака</span> <b style="color:var(--red)">${player.atk} ⚔️</b></div>
+                <div style="display:flex; justify-content:space-between; margin-bottom:8px;"><span>Защита</span> <b style="color:#47a1ff">${player.def} 🛡️</b></div>
+                <div style="display:flex; justify-content:space-between;"><span>Золото</span> <b style="color:var(--gold)">${player.coins} 🪙</b></div>
             `;
         }
 
-        // Переключение вкладок
+        // Переключение табов
         function tab(id) {
             document.querySelectorAll('.page').forEach(pg => pg.classList.remove('active'));
             document.querySelectorAll('.nav div').forEach(nv => nv.classList.remove('active'));
             document.getElementById(id).classList.add('active');
             document.getElementById('nav-' + id.split('-')[0]).classList.add('active');
+            if(id !== 'loc-page') exitLoc();
         }
 
-        function enterLoc(k) {
+        // Вход в локацию
+        function enterLoc(key) {
             document.getElementById('loc-select').style.display = 'none';
             document.getElementById('enemy-view').style.display = 'block';
-            document.getElementById('cur-loc-name').innerText = world[k].n;
-            let listHtml = '';
-            world[k].e.forEach(en => {
-                listHtml += `<button class="enemy-btn" onclick="startFight('${en.n}', ${en.h}, ${en.a}, ${en.r})">
+            document.getElementById('cur-loc-name').innerText = locData[key].n;
+            let html = '';
+            locData[key].e.forEach(en => {
+                html += `<button class="enemy-btn" onclick="startFight('${en.n}', ${en.h}, ${en.a}, ${en.r})">
                     <b>${en.n}</b> <br>
-                    <small style="color:#888">HP: ${en.h} | ATK: ${en.a}</small>
-                    <span style="position:absolute; right:15px; top:18px; color:var(--gold)">⚔️</span>
+                    <small style="color:#777">Здоровье: ${en.h} | Сила: ${en.a}</small>
                 </button>`;
             });
-            document.getElementById('enemies-list').innerHTML = listHtml;
+            document.getElementById('enemies-list').innerHTML = html;
         }
 
         function exitLoc() {
@@ -158,6 +168,7 @@
             document.getElementById('battle-view').style.display = 'none';
         }
 
+        // ЛОГИКА БОЯ
         function startFight(name, eh, ea, rew) {
             document.getElementById('enemy-view').style.display = 'none';
             document.getElementById('battle-view').style.display = 'block';
@@ -165,63 +176,71 @@
             document.getElementById('battle-result').style.display = 'none';
             
             let log = document.getElementById('log');
-            log.innerHTML = `<span style="color:var(--gold)">Бой начался!</span><br>`;
+            log.innerHTML = `<span style="color:#555">Вы встретили ${name}...</span><br>`;
             
-            let curE = eh, curP = p.hp;
+            let curE = eh, curP = player.hp;
             document.getElementById('enemy-hp').style.width = "100%";
             document.getElementById('player-hp').style.width = "100%";
 
-            let battleLoop = setInterval(() => {
-                // Твой ход
-                let pDmg = Math.floor(p.atk * (0.8 + Math.random() * 0.5));
-                curE -= pDmg;
-                log.innerHTML += `Ты нанес ${pDmg} урона.<br>`;
+            let battle = setInterval(() => {
+                // Игрок бьет
+                let pAtk = Math.floor(player.atk * (0.8 + Math.random() * 0.4));
+                curE -= pAtk;
+                log.innerHTML += `Вы нанесли <b>${pAtk}</b> урона.<br>`;
                 document.getElementById('enemy-hp').style.width = Math.max(0, (curE/eh*100)) + "%";
 
                 if(curE <= 0) {
-                    clearInterval(battleLoop);
-                    p.lvl += 1; p.coins += rew; p.atk += 2; // Прокачка
-                    showEndGame(`ПОБЕДА!<br>+${rew} 🪙 | +1 УРОВЕНЬ`, true);
+                    clearInterval(battle);
+                    player.lvl += 1; player.coins += rew; player.atk += 2; // Прокачка за победу
+                    showResult(`ПОБЕДА!<br>+${rew} 🪙`, true);
                     return;
                 }
 
-                // Ход врага
-                let eDmg = Math.max(2, ea - Math.floor(p.def / 5));
-                curP -= eDmg;
-                log.innerHTML += `<span style="color:var(--red)">${name} бьет на ${eDmg}.</span><br>`;
-                document.getElementById('player-hp').style.width = Math.max(0, (curP/p.maxHp*100)) + "%";
+                // Враг бьет
+                let eAtk = Math.max(2, ea - Math.floor(player.def / 5));
+                curP -= eAtk;
+                log.innerHTML += `<span style="color:var(--red)">${name} ударил на ${eAtk}.</span><br>`;
+                document.getElementById('player-hp').style.width = Math.max(0, (curP/player.maxHp*100)) + "%";
                 log.scrollTop = log.scrollHeight;
 
                 if(curP <= 0) {
-                    clearInterval(battleLoop);
-                    showEndGame("ТЫ ПОВЕРЖЕН", false);
+                    clearInterval(battle);
+                    showResult("ВЫ ПРОИГРАЛИ", false);
                 }
             }, 800);
         }
 
-        function showEndGame(msg, isWin) {
-            const resBox = document.getElementById('battle-result');
-            resBox.style.display = 'block';
-            document.getElementById('result-text').innerHTML = msg;
-            document.getElementById('result-text').style.color = isWin ? 'var(--green)' : 'var(--red)';
-            tg.HapticFeedback.notificationOccurred(isWin ? 'success' : 'error');
+        function showResult(txt, win) {
+            const res = document.getElementById('battle-result');
+            res.style.display = 'block';
+            document.getElementById('result-text').innerHTML = txt;
+            document.getElementById('result-text').style.color = win ? 'var(--green)' : 'var(--red)';
+            tg.HapticFeedback.notificationOccurred(win ? 'success' : 'error');
         }
 
-        // ГЛАВНОЕ: Сохранение без выхода
+        // ЗАВЕРШЕНИЕ (СОХРАНЕНИЕ)
         function finishBattle() {
-            // 1. Обновляем статы в меню сразу
+            // Ссылка на твой ngrok или сервер для сохранения в БД
+            const API_URL = 'https://ТВОЙ_АДРЕС_NGROK.ngrok-free.app/save'; 
+
+            const data = {
+                user_id: player.id,
+                lvl: player.lvl,
+                coins: player.coins,
+                atk: player.atk
+            };
+
+            // Фоновая отправка в БД
+            fetch(API_URL, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(data)
+            }).then(() => console.log("Прогресс в БД обновлен"))
+              .catch(e => console.log("Фоновое сохранение не удалось (проверь сервер)"));
+
+            // Просто переключаемся в меню, не закрывая Mini App
             drawStats();
-            
-            // 2. Фоновое сохранение (если есть сервер)
-            // Здесь можно использовать fetch('https://твой-сервер/save', {...})
-            
-            // 3. Возвращаем игрока в меню без закрытия приложения
             tab('menu-page');
-            exitLoc();
-            
-            // Опционально: посылаем данные боту в фоне. 
-            // ВНИМАНИЕ: tg.sendData ВСЕГДА закроет приложение. 
-            // Чтобы НЕ закрывалось, мы просто полагаемся на то, что статы обновились в объекте 'p'.
         }
 
         drawStats();
