@@ -6,76 +6,79 @@
     <title>Ancient RPG</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        :root { --gold: #d4af37; --dark: #0a0a0a; --red: #ff4747; --blue: #47a1ff; --green: #44ff44; --st: #ffa500; }
-        body { background: var(--dark); color: #e0e0e0; font-family: sans-serif; margin: 0; padding-bottom: 80px; }
-        .header { text-align: center; color: var(--gold); padding: 15px; font-weight: bold; border-bottom: 1px solid #333; letter-spacing: 2px; }
-        .page { display: none; padding: 15px; }
-        .page.active { display: block; }
-        .card { background: #161616; border: 1px solid #333; padding: 15px; border-radius: 12px; margin-bottom: 15px; }
-        .btn { background: var(--gold); color: black; border: none; padding: 14px; width: 100%; border-radius: 8px; font-weight: bold; cursor: pointer; margin: 5px 0; }
-        .nav { position: fixed; bottom: 0; width: 100%; background: #111; display: flex; border-top: 1px solid #333; }
-        .nav div { flex: 1; text-align: center; padding: 18px 5px; color: #555; font-size: 10px; text-transform: uppercase; }
-        .nav div.active { color: var(--gold); border-top: 2px solid var(--gold); }
-        #log { background: #000; height: 180px; overflow-y: auto; font-size: 12px; padding: 10px; border-radius: 8px; border: 1px solid #333; margin: 10px 0; color: #aaa; font-family: monospace; }
-        .bar { height: 10px; border-radius: 5px; margin: 5px 0; background: #333; overflow: hidden; }
-        .fill { height: 100%; transition: 0.3s; }
-        .loc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        :root { --gold: #f1c40f; --dark: #0f0f13; --card: #1c1c24; --accent: #3498db; --red: #e74c3c; --green: #2ecc71; --blue: #3498db; }
+        body { background: var(--dark); color: #f0f0f0; font-family: 'Segoe UI', sans-serif; margin: 0; user-select: none; }
+        .header { background: linear-gradient(to bottom, #1c1c24, #0f0f13); padding: 20px; text-align: center; border-bottom: 2px solid #2c2c34; }
+        .header h1 { margin: 0; font-size: 20px; color: var(--gold); text-transform: uppercase; letter-spacing: 3px; }
+        .page { display: none; padding: 15px; margin-bottom: 80px; }
+        .page.active { display: block; animation: slideUp 0.3s ease-out; }
+        @keyframes slideUp { from { transform: translateY(10px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .card { background: var(--card); border-radius: 15px; padding: 15px; margin-bottom: 15px; border: 1px solid #2c2c34; }
+        .stat-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 14px; }
+        .btn { background: var(--gold); color: #000; border: none; padding: 12px; width: 100%; border-radius: 10px; font-weight: bold; cursor: pointer; transition: 0.2s; margin-top: 5px; }
+        .nav { position: fixed; bottom: 0; width: 100%; background: #16161e; display: flex; border-top: 1px solid #2c2c34; }
+        .nav-item { flex: 1; text-align: center; padding: 15px 5px; color: #555; font-size: 11px; font-weight: bold; }
+        .nav-item.active { color: var(--gold); background: rgba(241, 196, 15, 0.05); }
+        #log { background: #000; height: 150px; overflow-y: auto; font-size: 12px; padding: 10px; border-radius: 10px; color: #888; font-family: monospace; border: 1px solid #2c2c34; }
+        .bar-container { height: 8px; background: #2c2c34; border-radius: 4px; overflow: hidden; margin-top: 5px; }
+        .bar-fill { height: 100%; transition: 0.5s; }
     </style>
 </head>
 <body>
-    <div class="header">ANCIENT RPG</div>
+    <div class="header"><h1>Ancient RPG</h1></div>
 
-    <div id="menu-page" class="page active">
-        <div class="card" id="stats-display"></div>
+    <div id="p-menu" class="page active">
         <div class="card">
-            ⚡ Стамина: <span id="st-text">100/100</span>
-            <div class="bar"><div id="st-fill" class="fill" style="background:var(--st)"></div></div>
+            <div class="stat-row"><span>🌟 Уровень</span><b id="lvl">1</b></div>
+            <div class="stat-row"><span>⚔️ Атака</span><b id="atk" style="color:var(--red)">0</b></div>
+            <div class="stat-row"><span>🛡️ Защита</span><b id="def" style="color:var(--blue)">0</b></div>
+            <div class="stat-row"><span>🪙 Золото</span><b id="coins" style="color:var(--gold)">0</b></div>
+        </div>
+        <div class="card">
+            <div class="stat-row"><span>⚡ Стамина</span><b id="st-val">100/100</b></div>
+            <div class="bar-container"><div id="st-fill" class="bar-fill" style="background:var(--gold)"></div></div>
         </div>
     </div>
 
-    <div id="inv-page" class="page">
-        <h3>РЮКЗАК</h3>
-        <div id="inv-list" class="card"></div>
-        <div id="item-modal" class="card" style="display:none; border-color: var(--gold);">
-            <h4 id="m-name"></h4>
-            <p id="m-stat"></p>
-            <button class="btn" id="m-btn"></button>
-            <button class="btn" style="background:#333; color:#ccc" onclick="this.parentElement.style.display='none'">Закрыть</button>
+    <div id="p-inv" class="page">
+        <h3 style="color:var(--gold)">Инвентарь</h3>
+        <div id="inv-list"></div>
+        <div id="item-modal" class="card" style="display:none; position:fixed; top:20%; left:10%; width:80%; z-index:100; border:2px solid var(--gold);">
+            <h4 id="im-name"></h4>
+            <p id="im-stat"></p>
+            <button class="btn" id="im-use">Надеть</button>
+            <button class="btn" style="background:#c0392b; color:white" id="im-sell">Продать</button>
+            <button class="btn" style="background:#333; color:white" onclick="document.getElementById('item-modal').style.display='none'">Закрыть</button>
         </div>
     </div>
 
-    <div id="town-page" class="page">
-        <h3>ЦЕНТРАЛЬНАЯ ПЛОЩАДЬ</h3>
-        <button class="btn" onclick="openShop()">⚖️ Торговая лавка</button>
-        <button class="btn" onclick="openQuests()">📜 Квесты</button>
-        <div id="town-sub" class="card" style="display:none; border-color: var(--gold);">
-            <div id="town-content"></div>
-            <button class="btn" style="background:#222; color:#fff" onclick="this.parentElement.style.display='none'">Назад</button>
-        </div>
+    <div id="p-shop" class="page">
+        <h3 style="color:var(--gold)">Лавка</h3>
+        <div id="shop-list"></div>
     </div>
 
-    <div id="loc-page" class="page">
+    <div id="p-loc" class="page">
         <div id="loc-select">
-            <h3>ВЫБОР ЛОКАЦИИ</h3>
-            <div class="loc-grid" id="loc-list"></div>
+            <h3 style="color:var(--gold)">Локации</h3>
+            <div id="loc-grid"></div>
         </div>
         <div id="battle-ui" style="display:none;">
-            <div class="card">
-                <h4 id="battle-target"></h4>
-                Кол-во врагов: <input type="range" id="auto-count" min="1" max="10" value="1" oninput="document.getElementById('cnt-v').innerText=this.value">
-                <span id="cnt-v">1</span>
-                <button class="btn" id="start-auto-btn">В БОЙ (АВТОБОЙ)</button>
+            <div class="card" style="text-align:center">
+                <h4 id="loc-name"></h4>
+                <p>Врагов: <span id="auto-val">1</span></p>
+                <input type="range" id="auto-count" min="1" max="10" value="1" style="width:100%" oninput="document.getElementById('auto-val').innerText=this.value">
+                <button class="btn" id="start-btn">В БОЙ</button>
             </div>
             <div id="log"></div>
-            <button id="exit-btn" class="btn" style="display:none; background:var(--green)" onclick="saveAndExit()">СОХРАНИТЬ ПРОГРЕСС</button>
+            <button class="btn" id="save-btn" style="display:none; background:var(--green)" onclick="saveData()">СОХРАНИТЬ</button>
         </div>
     </div>
 
     <div class="nav">
-        <div id="n-menu" class="active" onclick="tab('menu-page')">Герой</div>
-        <div id="n-inv" onclick="tab('inv-page')">Рюкзак</div>
-        <div id="n-town" onclick="tab('town-page')">Площадь</div>
-        <div id="n-loc" onclick="tab('loc-page')">Поход</div>
+        <div class="nav-item active" onclick="tab('p-menu', this)">Герой</div>
+        <div class="nav-item" onclick="tab('p-inv', this)">Рюкзак</div>
+        <div class="nav-item" onclick="tab('p-shop', this)">Лавка</div>
+        <div class="nav-item" onclick="tab('p-loc', this)">Поход</div>
     </div>
 
     <script>
@@ -88,130 +91,140 @@
             def: parseInt(urlP.get('def')) || 15,
             coins: parseInt(urlP.get('coins')) || 0,
             st: parseInt(urlP.get('st')) || 100,
+            lt: parseInt(urlP.get('lt')) || Date.now()/1000,
             inv: JSON.parse(decodeURIComponent(urlP.get('inv') || '[]')),
             q: JSON.parse(decodeURIComponent(urlP.get('q') || '{}'))
         };
 
-        const locData = [
-            {n: "Лес", lvl: 1, st: 5, atk: 8, rew: 20},
-            {n: "Пещера", lvl: 3, st: 10, atk: 15, rew: 45},
-            {n: "Болото", lvl: 5, st: 15, atk: 25, rew: 80},
-            {n: "Руины", lvl: 8, st: 20, atk: 40, rew: 150},
-            {n: "Пустошь", lvl: 12, st: 25, atk: 60, rew: 250},
-            {n: "Горы", lvl: 15, st: 30, atk: 90, rew: 400},
-            {n: "Замок", lvl: 20, st: 40, atk: 130, rew: 700},
-            {n: "Арена", lvl: 25, st: 50, atk: 200, rew: 1200}
+        const shopItems = [
+            {n: "Стальной меч", s: 20, c: 400, t: "atk", sl: "weapon"},
+            {n: "Рыцарский щит", s: 15, c: 350, t: "def", sl: "shield"},
+            {n: "Кольчуга", s: 30, c: 800, t: "def", sl: "armor"},
+            {n: "Клинок Хаоса", s: 100, c: 5000, t: "atk", sl: "weapon"}
         ];
 
-        function draw() {
-            let bAtk = 0; p.inv.forEach(i => { if(i.equipped) bAtk += i.stat; });
-            document.getElementById('stats-display').innerHTML = `Уровень: ${p.lvl}<br>Атака: ${p.atk + bAtk}<br>Монеты: ${p.coins} 🪙`;
-            document.getElementById('st-text').innerText = `${p.st}/100`;
-            document.getElementById('st-fill').style.width = p.st + '%';
-            
-            let h = '';
-            p.inv.forEach((it, i) => { h += `<div class="item-row" onclick="openItem(${i})"><span>${it.equipped ? '[E] ' : ''}${it.n}</span><span>+${it.stat}</span></div>`; });
-            document.getElementById('inv-list').innerHTML = h || 'Рюкзак пуст';
+        const locs = [
+            {n: "Лес", l: 1, s: 5, a: 8, r: 20}, {n: "Пещера", l: 3, s: 10, a: 15, r: 45},
+            {n: "Болото", l: 5, s: 15, a: 25, r: 80}, {n: "Руины", l: 8, s: 20, a: 45, r: 150},
+            {n: "Пустошь", l: 12, s: 25, a: 70, r: 280}, {n: "Горы", l: 15, s: 35, a: 100, r: 500}
+        ];
 
-            let lH = '';
-            locData.forEach(l => {
-                lH += `<button class="btn" style="font-size:11px; ${p.lvl < l.lvl ? 'opacity:0.5' : ''}" onclick="prepFight(${locData.indexOf(l)})">${l.n}<br><small>LVL ${l.lvl} | ⚡${l.st}</small></button>`;
-            });
-            document.getElementById('loc-list').innerHTML = lH;
+        const lootPool = [
+            {n: "Трофейный меч", s: 25, t: "atk", sl: "weapon", price: 200},
+            {n: "Шлем наемника", s: 15, t: "def", sl: "shield", price: 150},
+            {n: "Старая кираса", s: 20, t: "def", sl: "armor", price: 180}
+        ];
+
+        function init() {
+            let diff = Math.floor((Date.now()/1000 - p.lt) / 600);
+            if(diff > 0) p.st = Math.min(100, p.st + diff * 10);
+            updateUI();
         }
 
-        function tab(id) {
-            document.querySelectorAll('.page').forEach(pg => pg.classList.remove('active'));
-            document.querySelectorAll('.nav div').forEach(nv => nv.classList.remove('active'));
+        function updateUI() {
+            document.getElementById('lvl').innerText = p.lvl;
+            let bAtk = 0, bDef = 0;
+            p.inv.forEach(i => { 
+                if(i.equipped) { if(i.type === "atk") bAtk += i.stat; else bDef += i.stat; }
+            });
+            document.getElementById('atk').innerText = p.atk + bAtk;
+            document.getElementById('def').innerText = p.def + bDef;
+            document.getElementById('coins').innerText = p.coins;
+            document.getElementById('st-val').innerText = `${p.st}/100`;
+            document.getElementById('st-fill').style.width = p.st + '%';
+            
+            let invH = '';
+            p.inv.forEach((it, i) => {
+                invH += `<div class="card stat-row" onclick="openItem(${i})"><span>${it.equipped?'<b>[E]</b> ':''}${it.n}</span><span style="color:var(--accent)">+${it.stat}</span></div>`;
+            });
+            document.getElementById('inv-list').innerHTML = invH || 'Пусто';
+
+            let shopH = '';
+            shopItems.forEach(it => {
+                shopH += `<div class="card"><b>${it.n}</b> (+${it.stat} ${it.t})<button class="btn" onclick="buy('${it.n}',${it.stat},${it.c},'${it.t}','${it.sl}')">Купить за ${it.c}🪙</button></div>`;
+            });
+            document.getElementById('shop-list').innerHTML = shopH;
+
+            let locH = '';
+            locs.forEach((l, i) => {
+                locH += `<button class="btn" style="opacity:${p.lvl < l.l ? 0.4 : 1}" onclick="chooseLoc(${i})">${l.n} (LVL ${l.l})</button>`;
+            });
+            document.getElementById('loc-grid').innerHTML = locH;
+        }
+
+        function tab(id, el) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
             document.getElementById(id).classList.add('active');
-            document.getElementById('n-' + id.split('-')[0]).classList.add('active');
+            el.classList.add('active');
         }
 
         function openItem(i) {
             let it = p.inv[i];
             let m = document.getElementById('item-modal');
             m.style.display = 'block';
-            document.getElementById('m-name').innerText = it.n;
-            document.getElementById('m-stat').innerText = `Бонус: +${it.stat}`;
-            let b = document.getElementById('m-btn');
-            b.innerText = it.equipped ? "СНЯТЬ" : "НАДЕТЬ";
-            b.onclick = () => {
+            document.getElementById('im-name').innerText = it.n;
+            document.getElementById('im-stat').innerText = `Бонус: +${it.stat} (${it.type})`;
+            document.getElementById('im-use').innerText = it.equipped ? 'Снять' : 'Надеть';
+            document.getElementById('im-use').onclick = () => {
                 if(!it.equipped) p.inv.forEach(x => { if(x.slot === it.slot) x.equipped = false; });
-                it.equipped = !it.equipped; draw(); m.style.display = 'none';
+                it.equipped = !it.equipped; updateUI(); m.style.display = 'none';
+            };
+            document.getElementById('im-sell').onclick = () => {
+                if(p.inv.length <= 1) return alert("Нельзя продать последнее!");
+                p.coins += Math.floor((it.price || 100) * 0.5);
+                p.inv.splice(i, 1); updateUI(); m.style.display = 'none';
             };
         }
 
-        function openShop() {
-            let sub = document.getElementById('town-sub');
-            sub.style.display = 'block';
-            document.getElementById('town-content').innerHTML = `
-                <h4>ЛАВКА</h4>
-                <div class="card"><p>Рыцарский Меч (+25 АТК)</p><button class="btn" onclick="buy('Рыцарский Меч', 25, 300)">300 🪙</button></div>
-                <div class="card"><p>Эликсир Сил (+10 СТАМИНЫ)</p><button class="btn" onclick="buyStamina(50)">50 🪙</button></div>
-            `;
-        }
-
-        function buy(n, s, c) {
+        function buy(n, s, c, t, sl) {
             if(p.coins >= c) {
-                p.coins -= c; p.inv.push({n:n, stat:s, slot:'weapon', equipped:false});
-                draw(); alert("Куплено! Не забудь сохранить прогресс в Походе или через Сохранение.");
-            } else alert("Мало монет!");
+                p.coins -= c; p.inv.push({n:n, stat:s, price:c, type:t, slot:sl, equipped:false});
+                updateUI(); alert("Куплено!");
+            } else alert("Нет денег!");
         }
 
-        function buyStamina(c) {
-            if(p.coins >= c) { p.coins -= c; p.st = Math.min(100, p.st + 10); draw(); alert("Выносливость восстановлена!"); }
-        }
-
-        function prepFight(i) {
-            let l = locData[i];
-            if(p.lvl < l.lvl) return alert("Твой уровень слишком низок!");
+        function chooseLoc(i) {
+            if(p.lvl < locs[i].l) return alert("Рано!");
             document.getElementById('loc-select').style.display = 'none';
             document.getElementById('battle-ui').style.display = 'block';
-            document.getElementById('battle-target').innerText = `Локация: ${l.n}`;
-            document.getElementById('start-auto-btn').onclick = () => startAuto(i);
+            document.getElementById('loc-name').innerText = locs[i].n;
+            document.getElementById('start-btn').onclick = () => startBattle(i);
         }
 
-        async function startAuto(idx) {
-            let loc = locData[idx];
+        async function startBattle(idx) {
+            let loc = locs[idx];
             let count = parseInt(document.getElementById('auto-count').value);
             let log = document.getElementById('log');
-            log.innerHTML = `--- НАЧАЛО АВТОБОЯ ---<br>`;
+            log.innerHTML = `Начало похода...<br>`;
             
+            let bAtk = 0; p.inv.forEach(i => { if(i.equipped && i.type === "atk") bAtk += i.stat; });
+
             for(let i=1; i<=count; i++) {
-                if(p.st < loc.st) { log.innerHTML += `<span style="color:var(--red)">! Нет энергии !</span><br>`; break; }
-                p.st -= loc.st;
-                let win = (p.atk + (p.inv.find(it=>it.equipped)?.stat || 0)) > loc.atk;
-                
-                log.innerHTML += `Враг #${i}: `;
-                if(win) {
-                    p.coins += loc.rew;
-                    log.innerHTML += `<span style="color:var(--green)">ПОБЕДА (+${loc.rew}🪙)</span><br>`;
+                if(p.st < loc.s) break;
+                p.st -= loc.s;
+                if((p.atk + bAtk) > loc.a) {
+                    p.coins += loc.r;
+                    log.innerHTML += `Бой ${i}: <span style="color:var(--green)">Победа!</span><br>`;
+                    // Шанс дропа после 5 локации (индекс 2 и выше)
+                    if(idx >= 2 && Math.random() < 0.2) {
+                        let item = lootPool[Math.floor(Math.random() * lootPool.length)];
+                        p.inv.push({...item, equipped: false});
+                        log.innerHTML += `<span style="color:var(--gold)">✨ НАЙДЕН ЛУТ: ${item.n}!</span><br>`;
+                    }
                 } else {
-                    log.innerHTML += `<span style="color:var(--red)">ПОРАЖЕНИЕ</span><br>`;
+                    log.innerHTML += `Бой ${i}: <span style="color:var(--red)">Отступил.</span><br>`;
                     break;
                 }
-                draw();
-                await new Promise(r => setTimeout(r, 400));
-                log.scrollTop = log.scrollHeight;
+                updateUI();
+                await new Promise(r => setTimeout(r, 300));
             }
-            document.getElementById('exit-btn').style.display = 'block';
+            document.getElementById('save-btn').style.display = 'block';
         }
 
-        function saveAndExit() {
-            tg.sendData(JSON.stringify(p));
-            tg.close();
-        }
+        function saveData() { tg.sendData(JSON.stringify(p)); tg.close(); }
 
-        function openQuests() {
-            let sub = document.getElementById('town-sub');
-            sub.style.display = 'block';
-            let q = p.q.coins_task;
-            document.getElementById('town-content').innerHTML = `<h4>КВЕСТЫ</h4><div class="card">Золото: ${q.done ? 'Готово' : p.coins+'/150'}${(!q.done && p.coins>=150)?'<button onclick="claim()">ОК</button>':''}</div>`;
-        }
-
-        function claim() { p.q.coins_task.done=true; p.coins+=50; p.lvl+=1; draw(); }
-
-        draw();
+        init();
     </script>
 </body>
 </html>
