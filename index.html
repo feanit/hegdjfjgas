@@ -14,11 +14,13 @@
         .btn { background: var(--gold); color: black; border: none; padding: 12px; width: 100%; border-radius: 5px; font-weight: bold; margin-top: 10px; }
         .enemy-btn { background: #222; color: #fff; border: 1px solid #444; padding: 12px; width: 100%; margin-top: 8px; text-align: left; border-radius: 8px; }
         .nav { position: fixed; bottom: 0; width: 100%; background: #111; display: flex; border-top: 1px solid #333; }
-        .nav div { flex: 1; text-align: center; padding: 20px; color: #666; font-size: 12px; }
-        .nav div.active { color: var(--gold); font-weight: bold; }
-        #log { background: #000; height: 150px; overflow-y: auto; font-size: 13px; padding: 10px; border: 1px solid #333; margin: 10px 0; border-radius: 5px; }
+        .nav div { flex: 1; text-align: center; padding: 18px; color: #666; font-size: 11px; text-transform: uppercase; }
+        .nav div.active { color: var(--gold); font-weight: bold; border-top: 2px solid var(--gold); }
+        #log { background: #000; height: 160px; overflow-y: auto; font-size: 13px; padding: 10px; border: 1px solid #333; margin: 10px 0; border-radius: 5px; color: #bbb; }
         .hp-bar { width: 100%; background: #333; height: 8px; border-radius: 4px; margin: 5px 0 10px; overflow: hidden; }
         .hp-fill { height: 100%; background: var(--red); transition: 0.3s; width: 100%; }
+        .inv-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+        .inv-slot { aspect-ratio: 1; background: #111; border: 1px dashed #444; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 20px; }
     </style>
 </head>
 <body>
@@ -30,23 +32,23 @@
 
     <div id="inv-page" class="page">
         <h2 style="color: var(--gold)">ИНВЕНТАРЬ</h2>
-        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;">
-            <div style="aspect-ratio:1; background:#111; border:1px dashed #444; display:flex; align-items:center; justify-content:center;">⚔️</div>
-            <div style="aspect-ratio:1; background:#111; border:1px dashed #444;"></div>
-            <div style="aspect-ratio:1; background:#111; border:1px dashed #444;"></div>
-            <div style="aspect-ratio:1; background:#111; border:1px dashed #444;"></div>
+        <div class="inv-grid">
+            <div class="inv-slot" style="border-style: solid; border-color: var(--gold);">⚔️</div>
+            <div class="inv-slot"></div><div class="inv-slot"></div><div class="inv-slot"></div>
+            <div class="inv-slot"></div><div class="inv-slot"></div><div class="inv-slot"></div><div class="inv-slot"></div>
         </div>
     </div>
 
     <div id="loc-page" class="page">
         <div id="loc-select">
             <h2 style="color: var(--gold)">ЛОКАЦИИ</h2>
-            <div class="card"><h3>🌲 Лес</h3><button class="btn" onclick="enterLoc('forest')">Войти</button></div>
-            <div class="card"><h3>🏛 Руины</h3><button class="btn" onclick="enterLoc('ruins')">Войти</button></div>
+            <div class="card"><h3>🌲 Зачарованный Лес</h3><button class="btn" onclick="enterLoc('forest')">Войти</button></div>
+            <div class="card"><h3>🏛 Залы Мертвых</h3><button class="btn" onclick="enterLoc('ruins')">Войти</button></div>
         </div>
 
         <div id="enemy-view" style="display:none;">
-            <button onclick="exitLoc()" style="color: var(--gold); background:none; border:none;">⬅ Назад</button>
+            <button onclick="exitLoc()" style="color: var(--gold); background:none; border:none; padding:10px 0;">⬅ Назад</button>
+            <h3 id="cur-loc-name"></h3>
             <div id="enemies-list"></div>
         </div>
 
@@ -57,15 +59,15 @@
             <div id="log"></div>
             <div id="battle-res" style="display:none; text-align:center;">
                 <h3 id="res-txt"></h3>
-                <button class="btn" onclick="finishBattle()">СОХРАНИТЬ И ВЫЙТИ</button>
+                <button class="btn" id="finish-btn" onclick="saveAndExit()">СОХРАНИТЬ И ВЫЙТИ</button>
             </div>
         </div>
     </div>
 
     <div class="nav">
-        <div id="nav-menu" class="active" onclick="tab('menu-page')">ГЕРОЙ</div>
-        <div id="nav-inv" onclick="tab('inv-page')">РЮКЗАК</div>
-        <div id="nav-loc" onclick="tab('loc-page')">ПОХОД</div>
+        <div id="nav-menu" class="active" onclick="tab('menu-page')">Герой</div>
+        <div id="nav-inv" onclick="tab('inv-page')">Рюкзак</div>
+        <div id="nav-loc" onclick="tab('loc-page')">Поход</div>
     </div>
 
     <script>
@@ -77,34 +79,39 @@
             lvl: parseInt(urlP.get('lvl')) || 1,
             atk: parseInt(urlP.get('atk')) || 12,
             coins: parseInt(urlP.get('coins')) || 0,
-            hp: 100
+            def: parseInt(urlP.get('def')) || 15,
+            hp: 100, maxHp: 100
         };
 
         function draw() {
             document.getElementById('stats-display').innerHTML = `
-                <p>Уровень: ${p.lvl}</p>
-                <p>Атака: <b style="color:var(--red)">${p.atk}</b></p>
-                <p>Золото: <b style="color:var(--gold)">${p.coins}</b></p>
+                <p>Уровень: <b>${p.lvl}</b></p>
+                <p>Атака: <b style="color:var(--red)">${p.atk} ⚔️</b></p>
+                <p>Защита: <b>${p.def} 🛡️</b></p>
+                <p>Золото: <b style="color:var(--gold)">${p.coins} 🪙</b></p>
             `;
         }
 
         function tab(id) {
             document.querySelectorAll('.page').forEach(pg => pg.classList.remove('active'));
+            document.querySelectorAll('.nav div').forEach(nv => nv.classList.remove('active'));
             document.getElementById(id).classList.add('active');
+            document.getElementById('nav-' + id.split('-')[0]).classList.add('active');
             if(id !== 'loc-page') exitLoc();
         }
 
         const locs = {
-            forest: { n: "Лес", e: [{n: "Слайм", h: 40, a: 5, r: 20}] },
-            ruins: { n: "Руины", e: [{n: "Скелет", h: 100, a: 15, r: 80}] }
+            forest: { n: "Лес", e: [{n: "Слайм", h: 45, a: 6, r: 20}, {n: "Волк", h: 85, a: 12, r: 55}] },
+            ruins: { n: "Руины", e: [{n: "Скелет", h: 120, a: 20, r: 120}, {n: "Лич", h: 300, a: 40, r: 450}] }
         };
 
         function enterLoc(k) {
             document.getElementById('loc-select').style.display = 'none';
             document.getElementById('enemy-view').style.display = 'block';
+            document.getElementById('cur-loc-name').innerText = locs[k].n;
             let h = '';
             locs[k].e.forEach(en => {
-                h += `<button class="enemy-btn" onclick="startFight('${en.n}', ${en.h}, ${en.a}, ${en.r})">⚔️ ${en.n}</button>`;
+                h += `<button class="enemy-btn" onclick="startFight('${en.n}', ${en.h}, ${en.a}, ${en.r})">💀 ${en.n} <small style="float:right; color:#777;">HP:${en.h}</small></button>`;
             });
             document.getElementById('enemies-list').innerHTML = h;
         }
@@ -120,32 +127,32 @@
             document.getElementById('battle-view').style.display = 'block';
             document.getElementById('battle-res').style.display = 'none';
             let l = document.getElementById('log');
-            l.innerHTML = 'Бой начался...<br>';
+            l.innerHTML = '⚔️ Бой начался...<br>';
             let ch = h, cp = p.hp;
 
             let itv = setInterval(() => {
-                let d = Math.floor(p.atk * (0.8 + Math.random()*0.4));
+                let d = Math.floor(p.atk * (0.8 + Math.random()*0.5));
                 ch -= d;
-                l.innerHTML += `Урон: ${d}. Враг: ${Math.max(0, ch)} HP<br>`;
+                l.innerHTML += `Ты нанес ${d} урона. Враг: ${Math.max(0, ch)} HP<br>`;
                 document.getElementById('enemy-hp').style.width = (ch/h*100)+'%';
                 if(ch <= 0) {
                     clearInterval(itv);
-                    p.lvl++; p.coins += r; p.atk += 2;
+                    p.lvl++; p.coins += r; p.atk += 3;
                     document.getElementById('battle-res').style.display = 'block';
-                    document.getElementById('res-txt').innerText = 'ПОБЕДА!';
+                    document.getElementById('res-txt').innerHTML = `ПОБЕДА!<br><small>+${r} 🪙</small>`;
                     return;
                 }
-                let ed = Math.max(1, a - 3);
+                let ed = Math.max(2, a - Math.floor(p.def/5));
                 cp -= ed;
-                l.innerHTML += `Вам нанесли ${ed} урона.<br>`;
-                document.getElementById('player-hp').style.width = (cp/100*100)+'%';
+                l.innerHTML += `<span style="color:var(--red)">Урон врага: ${ed}. Твоё HP: ${Math.max(0, cp)}</span><br>`;
+                document.getElementById('player-hp').style.width = (cp/p.maxHp*100)+'%';
                 l.scrollTop = l.scrollHeight;
                 if(cp <= 0) { clearInterval(itv); tg.close(); }
             }, 800);
         }
 
-        function finishBattle() {
-            // Отправляем данные и закрываем (для работы без ngrok)
+        function saveAndExit() {
+            // Самый надежный способ для GitHub Pages
             tg.sendData(JSON.stringify({lvl: p.lvl, coins: p.coins, atk: p.atk}));
         }
 
