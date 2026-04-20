@@ -1,164 +1,155 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Ancient RPG</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        :root { --gold: #d4af37; --dark: #0a0a0a; --red: #ff4747; }
-        body { background: var(--dark); color: #e0e0e0; font-family: 'Roboto Mono', monospace; margin: 0; padding-bottom: 70px; }
-        .content { display: none; padding: 15px; }
-        .content.active { display: block; }
-        .card { background: #151515; border: 1px solid #333; padding: 15px; border-radius: 12px; margin-bottom: 10px; }
-        .btn { background: #222; border: 1px solid #444; color: white; padding: 10px; width: 100%; margin-top: 5px; border-radius: 8px; text-align: left; }
-        
-        /* Бой */
-        #battle-ui { display: none; text-align: center; }
-        .hp-bar-bg { width: 100%; background: #333; height: 10px; margin: 5px 0; border-radius: 5px; }
-        .hp-bar-fill { height: 100%; background: var(--red); width: 100%; transition: 0.3s; border-radius: 5px; }
-        #log { background: #000; height: 150px; overflow-y: auto; font-size: 12px; padding: 10px; text-align: left; border: 1px solid #444; }
-
-        .nav { position: fixed; bottom: 0; width: 100%; background: #111; display: flex; justify-content: space-around; padding: 15px 0; border-top: 1px solid #333; }
-        .nav-btn { color: #666; font-size: 12px; }
-        .nav-btn.active { color: var(--gold); }
+        body { background: #0a0a0a; color: #e0e0e0; font-family: sans-serif; margin: 0; padding-bottom: 80px; }
+        .page { display: none; padding: 20px; }
+        .page.active { display: block; }
+        .card { background: #1a1a1a; border: 1px solid #333; padding: 15px; border-radius: 10px; margin-bottom: 10px; }
+        .btn { background: #d4af37; color: black; border: none; padding: 12px; width: 100%; border-radius: 5px; font-weight: bold; margin-top: 10px; }
+        .enemy-btn { background: #222; color: #fff; border: 1px solid #444; padding: 10px; width: 100%; margin-top: 5px; text-align: left; border-radius: 5px; }
+        .nav { position: fixed; bottom: 0; width: 100%; background: #111; display: flex; border-top: 1px solid #333; }
+        .nav div { flex: 1; text-align: center; padding: 20px; color: #666; font-size: 12px; }
+        .nav div.active { color: #d4af37; font-weight: bold; }
+        #log { background: #000; height: 120px; overflow-y: auto; font-size: 12px; padding: 10px; border: 1px solid #d4af37; margin-top: 10px; }
     </style>
 </head>
 <body>
 
-    <div id="menu" class="content active">
-        <h1>Ancient RPG</h1>
-        <div class="card" id="player-stats"></div>
+    <div id="menu-page" class="page active">
+        <h1>ГЕРОЙ</h1>
+        <div class="card" id="stats-display">
+            </div>
     </div>
 
-    <div id="locations" class="content">
-        <h2>Локации</h2>
+    <div id="loc-page" class="page">
+        <h1>ПОХОД</h1>
         <div id="loc-list">
             <div class="card">
-                <b>🌲 Лес Теней</b>
-                <p style="font-size: 10px; color: #888;">Здесь водятся слабые монстры.</p>
-                <button class="btn" onclick="showEnemies('лес')">Войти в локацию</button>
+                <h3>🌲 Темный Лес</h3>
+                <button class="btn" onclick="openLoc('forest')">Войти</button>
             </div>
             <div class="card">
-                <b>🏛 Руины</b>
-                <p style="font-size: 10px; color: #888;">Опасно! Древние стражи.</p>
-                <button class="btn" onclick="showEnemies('руины')">Войти в локацию</button>
+                <h3>🏛 Забытые Руины</h3>
+                <button class="btn" onclick="openLoc('ruins')">Войти</button>
             </div>
         </div>
 
-        <div id="enemy-list" style="display:none;">
-            <button class="btn" style="color: var(--gold)" onclick="backToLocs()">⬅ Назад к списку</button>
-            <h3 id="loc-title"></h3>
-            <div id="enemies-here"></div>
+        <div id="enemy-select" style="display:none;">
+            <button onclick="showLocs()" style="color: #d4af37; background: none; border: none;">⬅ Назад</button>
+            <h2 id="loc-name"></h2>
+            <div id="enemies-list"></div>
         </div>
 
-        <div id="battle-ui">
-            <h2 id="enemy-name"></h2>
-            <div class="hp-bar-bg"><div id="e-hp" class="hp-bar-fill"></div></div>
-            <div class="hp-bar-bg"><div id="p-hp" class="hp-bar-fill" style="background: green"></div></div>
+        <div id="battle-ui" style="display:none;">
+            <h2 id="target-name"></h2>
             <div id="log"></div>
         </div>
     </div>
 
     <div class="nav">
-        <div class="nav-btn active" onclick="tab('menu')">Герой</div>
-        <div class="nav-btn" onclick="tab('locations')">Поход</div>
+        <div id="nav-menu" class="active" onclick="showPage('menu-page')">ГЕРОЙ</div>
+        <div id="nav-loc" onclick="showPage('loc-page')">ПОХОД</div>
     </div>
 
     <script>
         const tg = window.Telegram.WebApp;
-        const params = new URLSearchParams(window.location.search);
-        let p = {
-            lvl: parseInt(params.get('lvl')) || 1,
-            atk: parseInt(params.get('atk')) || 10,
-            def: parseInt(params.get('def')) || 15,
-            coins: parseInt(params.get('coins')) || 0,
-            hp: 100, maxHp: 100
+        const urlParams = new URLSearchParams(window.location.search);
+        
+        let player = {
+            lvl: parseInt(urlParams.get('lvl')) || 1,
+            atk: parseInt(urlParams.get('atk')) || 12,
+            coins: parseInt(urlParams.get('coins')) || 0,
+            def: parseInt(urlParams.get('def')) || 15,
+            hp: 100
         };
 
-        const enemies = {
-            'лес': [
-                { name: 'Гоблин', hp: 40, atk: 5, reward: 20 },
-                { name: 'Волк', hp: 60, atk: 8, reward: 45 }
-            ],
-            'руины': [
-                { name: 'Скелет', hp: 120, atk: 15, reward: 100 },
-                { name: 'Голем', hp: 300, atk: 25, reward: 300 }
-            ]
+        const world = {
+            forest: { name: "Темный Лес", enemies: [
+                {n: "Слизь", h: 30, a: 4, r: 15},
+                {n: "Разбойник", h: 60, a: 8, r: 40}
+            ]},
+            ruins: { name: "Забытые Руины", enemies: [
+                {n: "Скелет", h: 100, a: 12, r: 90},
+                {n: "Призрак", h: 150, a: 20, r: 200}
+            ]}
         };
 
-        function updateStats() {
-            document.getElementById('player-stats').innerHTML = `
-                <p>Уровень: ${p.lvl}</p>
-                <p>Урон: ${p.atk}</p>
-                <p>Монеты: ${p.coins} 🪙</p>
+        function renderStats() {
+            document.getElementById('stats-display').innerHTML = `
+                <p>Уровень: <b>${player.lvl}</b></p>
+                <p>Атака: <b style="color: #ff4747;">${player.atk} ⚔️</b></p>
+                <p>Защита: <b>${player.def}</b></p>
+                <p>Золото: <b style="color: #d4af37;">${player.coins} 🪙</b></p>
             `;
         }
 
-        function tab(id) {
-            document.querySelectorAll('.content').forEach(c => c.classList.remove('active'));
+        function showPage(id) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.nav div').forEach(n => n.classList.remove('active'));
             document.getElementById(id).classList.add('active');
-            backToLocs();
+            document.getElementById('nav-' + id.split('-')[0]).classList.add('active');
         }
 
-        function showEnemies(locKey) {
+        function openLoc(key) {
             document.getElementById('loc-list').style.display = 'none';
-            document.getElementById('enemy-list').style.display = 'block';
-            document.getElementById('loc-title').innerText = locKey.toUpperCase();
+            document.getElementById('enemy-select').style.display = 'block';
+            document.getElementById('loc-name').innerText = world[key].name;
             let html = '';
-            enemies[locKey].forEach(e => {
-                html += `<button class="btn" onclick="startFight('${e.name}', ${e.hp}, ${e.atk}, ${e.reward})">
-                    ⚔ Напасть на: ${e.name} (HP: ${e.hp}, ATK: ${e.atk})
+            world[key].enemies.forEach(e => {
+                html += `<button class="enemy-btn" onclick="startBattle('${e.n}', ${e.h}, ${e.a}, ${e.r})">
+                    🗡 ${e.n} (HP: ${e.h}, ATK: ${e.a})
                 </button>`;
             });
-            document.getElementById('enemies-here').innerHTML = html;
+            document.getElementById('enemies-list').innerHTML = html;
         }
 
-        function backToLocs() {
+        function showLocs() {
             document.getElementById('loc-list').style.display = 'block';
-            document.getElementById('enemy-list').style.display = 'none';
+            document.getElementById('enemy-select').style.display = 'none';
             document.getElementById('battle-ui').style.display = 'none';
         }
 
-        function startFight(name, eHp, eAtk, reward) {
-            document.getElementById('enemy-list').style.display = 'none';
+        function startBattle(name, eHp, eAtk, reward) {
+            document.getElementById('enemy-select').style.display = 'none';
             document.getElementById('battle-ui').style.display = 'block';
-            document.getElementById('enemy-name').innerText = name;
-            let curE = eHp, curP = p.hp;
+            document.getElementById('target-name').innerText = name;
             let log = document.getElementById('log');
-            log.innerHTML = 'Бой начался!<br>';
-
-            const iter = setInterval(() => {
-                let dmgP = Math.floor(p.atk * (0.8 + Math.random() * 0.4));
-                curE -= dmgP;
-                log.innerHTML += `Ты ударил на ${dmgP}. У врага ${Math.max(0, curE)} HP<br>`;
-                document.getElementById('e-hp').style.width = (curE/eHp*100) + '%';
-
+            log.innerHTML = "⚔️ Сражение началось!<br>";
+            
+            let curE = eHp, curP = player.hp;
+            let fight = setInterval(() => {
+                let pDmg = Math.floor(player.atk * (0.8 + Math.random()*0.4));
+                curE -= pDmg;
+                log.innerHTML += `Ты ударил ${name} на ${pDmg}. (Враг: ${Math.max(0, curE)} HP)<br>`;
+                
                 if(curE <= 0) {
-                    clearInterval(iter);
-                    p.coins += reward; p.lvl += 1; p.atk += 2;
-                    log.innerHTML += `<b>ПОБЕДА! +${reward} монет.</b>`;
-                    updateStats();
-                    setTimeout(() => tg.sendData(JSON.stringify({action:'save_progress', lvl:p.lvl, coins:p.coins, atk:p.atk})), 2000);
+                    clearInterval(fight);
+                    player.coins += reward; player.lvl += 1; player.atk += 3;
+                    log.innerHTML += `<b style="color: #44ff44;">Победа! +${reward} золота. Атака выросла!</b>`;
+                    renderStats();
+                    setTimeout(() => tg.sendData(JSON.stringify({action: "save", lvl: player.lvl, coins: player.coins, atk: player.atk})), 1500);
                     return;
                 }
 
-                let dmgE = Math.max(1, eAtk - Math.floor(p.def/5));
-                curP -= dmgE;
-                log.innerHTML += `Враг ударил на ${dmgE}. У тебя ${Math.max(0, curP)} HP<br>`;
-                document.getElementById('p-hp').style.width = (curP/p.maxHp*100) + '%';
+                let eDmg = Math.max(1, eAtk - Math.floor(player.def/5));
+                curP -= eDmg;
+                log.innerHTML += `<span style="color: #ff4747;">${name} кусает тебя на ${eDmg}. (Ты: ${curP} HP)</span><br>`;
                 log.scrollTop = log.scrollHeight;
 
                 if(curP <= 0) {
-                    clearInterval(iter);
-                    log.innerHTML += `ТЫ ПРОИГРАЛ...`;
-                    setTimeout(() => tg.close(), 2000);
+                    clearInterval(fight);
+                    log.innerHTML += `💀 Ты проиграл...`;
+                    setTimeout(() => tg.close(), 1500);
                 }
             }, 800);
         }
 
-        updateStats();
+        renderStats();
     </script>
 </body>
 </html>
