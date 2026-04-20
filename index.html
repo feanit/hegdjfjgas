@@ -1,77 +1,73 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Ancient RPG</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        :root { --gold: #d4af37; --dark: #0a0a0a; --red: #ff4747; --green: #44ff44; --blue: #47a1ff; }
-        body { background: var(--dark); color: #e0e0e0; font-family: sans-serif; margin: 0; padding-bottom: 80px; }
-        .page { display: none; padding: 20px; }
+        :root { --gold: #d4af37; --dark: #0a0a0a; --red: #ff4747; --blue: #47a1ff; }
+        body { background: var(--dark); color: #e0e0e0; font-family: sans-serif; margin: 0; padding-bottom: 70px; }
+        .header { text-align: center; color: var(--gold); padding: 10px; font-weight: bold; border-bottom: 1px solid #333; }
+        .page { display: none; padding: 15px; }
         .page.active { display: block; }
-        .card { background: #1a1a1a; border: 1px solid #333; padding: 15px; border-radius: 12px; margin-bottom: 10px; }
-        .btn { background: var(--gold); color: black; border: none; padding: 14px; width: 100%; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.2s; }
-        .btn:active { transform: scale(0.98); opacity: 0.8; }
-        .enemy-btn { background: #222; color: #fff; border: 1px solid #444; padding: 12px; width: 100%; margin-top: 8px; text-align: left; border-radius: 10px; }
-        .nav { position: fixed; bottom: 0; width: 100%; background: #111; display: flex; border-top: 1px solid #333; }
-        .nav div { flex: 1; text-align: center; padding: 18px; color: #666; font-size: 11px; }
-        .nav div.active { color: var(--gold); font-weight: bold; border-top: 2px solid var(--gold); }
-        #log { background: #000; height: 150px; overflow-y: auto; font-size: 13px; padding: 10px; border: 1px solid #333; margin: 10px 0; border-radius: 8px; color: #bbb; }
-        .hp-bar { width: 100%; background: #333; height: 8px; border-radius: 4px; margin: 5px 0 10px; overflow: hidden; }
-        .hp-fill { height: 100%; background: var(--red); transition: 0.3s; width: 100%; }
-        .inv-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
-        .inv-slot { aspect-ratio: 1; background: #111; border: 1px dashed #444; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 20px; }
+        .card { background: #1a1a1a; border: 1px solid #333; padding: 15px; border-radius: 10px; margin-bottom: 10px; }
+        .btn { background: var(--gold); color: black; border: none; padding: 12px; width: 100%; border-radius: 5px; font-weight: bold; margin: 5px 0; cursor: pointer; }
+        .nav { position: fixed; bottom: 0; width: 100%; background: #111; display: flex; border-top: 1px solid #333; font-size: 10px; }
+        .nav div { flex: 1; text-align: center; padding: 15px 5px; color: #666; text-transform: uppercase; }
+        .nav div.active { color: var(--gold); border-top: 2px solid var(--gold); }
+        .item-row { padding: 10px; border-bottom: 1px solid #222; display: flex; justify-content: space-between; }
     </style>
 </head>
 <body>
+    <div class="header">ANCIENT RPG</div>
 
     <div id="menu-page" class="page active">
-        <h2 style="color: var(--gold)">ГЕРОЙ</h2>
-        <div class="card" id="stats-display"></div>
+        <div class="card" id="stats"></div>
     </div>
 
     <div id="inv-page" class="page">
-        <h2 style="color: var(--gold)">ИНВЕНТАРЬ</h2>
-        <div class="inv-grid">
-            <div class="inv-slot" style="border-style: solid; border-color: var(--gold);">⚔️</div>
-            <div class="inv-slot">🛡️</div><div class="inv-slot"></div><div class="inv-slot"></div>
+        <h3>ИНВЕНТАРЬ</h3>
+        <div id="inv-list" class="card"></div>
+        <div id="item-info" class="card" style="display:none;">
+            <h4 id="item-name"></h4>
+            <p id="item-stat"></p>
+            <button class="btn" id="item-action"></button>
+            <button class="btn" style="background:#444;color:#fff" onclick="document.getElementById('item-info').style.display='none'">Закрыть</button>
+        </div>
+    </div>
+
+    <div id="town-page" class="page">
+        <h3>ЦЕНТРАЛЬНАЯ ПЛОЩАДЬ</h3>
+        <button class="btn" onclick="openShop()">⚖️ Торговая лавка</button>
+        <button class="btn" style="opacity: 0.5">⚒️ Крафт (Скоро)</button>
+        <button class="btn" onclick="openQuests()">📜 Квесты</button>
+
+        <div id="sub-town" class="card" style="display:none; margin-top:20px;">
+            <div id="sub-content"></div>
+            <button class="btn" style="background:#333;color:#eee" onclick="this.parentElement.style.display='none'">Назад</button>
         </div>
     </div>
 
     <div id="loc-page" class="page">
         <div id="loc-select">
-            <h2 style="color: var(--gold)">ЛОКАЦИИ</h2>
-            <div class="card"><h3>🌲 Лес</h3><button class="btn" onclick="enterLoc('forest')">ВОЙТИ</button></div>
-            <div class="card"><h3>🏛 Руины</h3><button class="btn" onclick="enterLoc('ruins')">ВОЙТИ</button></div>
+            <button class="btn" onclick="startFight('Лес', 50, 10, 30)">В лес (Слайм)</button>
         </div>
-
-        <div id="enemy-view" style="display:none;">
-            <button onclick="exitLoc()" style="color: var(--gold); background:none; border:none; padding:10px 0;">⬅ НАЗАД</button>
-            <div id="enemies-list"></div>
-        </div>
-
-        <div id="battle-view" style="display:none;">
-            <h3 id="battle-title" style="text-align:center;">БИТВА</h3>
-            <div class="hp-bar"><div id="enemy-hp" class="hp-fill"></div></div>
-            <div class="hp-bar"><div id="player-hp" class="hp-fill" style="background:var(--green)"></div></div>
-            <div id="log"></div>
-            <div id="battle-res" style="display:none; text-align:center;">
-                <h3 id="res-txt"></h3>
-                <button class="btn" onclick="sendToBot()">СОХРАНИТЬ И ВЫЙТИ</button>
-            </div>
+        <div id="battle" style="display:none;">
+            <p id="log" style="font-size:12px; height:100px; overflow:auto; background:#000; padding:5px;"></p>
+            <button id="save-btn" class="btn" style="display:none;" onclick="saveAll()">СОХРАНИТЬ И ВЫЙТИ</button>
         </div>
     </div>
 
     <div class="nav">
-        <div id="nav-menu" class="active" onclick="tab('menu-page')">Герой</div>
-        <div id="nav-inv" onclick="tab('inv-page')">Рюкзак</div>
-        <div id="nav-loc" onclick="tab('loc-page')">Поход</div>
+        <div id="n-menu" class="active" onclick="tab('menu-page')">Меню</div>
+        <div id="n-inv" onclick="tab('inv-page')">Рюкзак</div>
+        <div id="n-town" onclick="tab('town-page')">Площадь</div>
+        <div id="n-loc" onclick="tab('loc-page')">Поход</div>
     </div>
 
     <script>
         const tg = window.Telegram.WebApp;
-        tg.expand();
         const urlP = new URLSearchParams(window.location.search);
 
         let p = {
@@ -79,84 +75,90 @@
             atk: parseInt(urlP.get('atk')) || 12,
             def: parseInt(urlP.get('def')) || 15,
             coins: parseInt(urlP.get('coins')) || 0,
-            hp: 100, maxHp: 100
+            inv: JSON.parse(urlP.get('inv') || '[]'),
+            q: JSON.parse(urlP.get('q') || '{}')
         };
 
         function draw() {
-            document.getElementById('stats-display').innerHTML = `
-                <p>Уровень: <b>${p.lvl}</b></p>
-                <p>Атака: <b style="color:var(--red)">${p.atk} ⚔️</b></p>
-                <p>Защита: <b style="color:var(--blue)">${p.def} 🛡️</b></p>
-                <p>Золото: <b style="color:var(--gold)">${p.coins} 🪙</b></p>
-            `;
+            document.getElementById('stats').innerHTML = `Уровень: ${p.lvl}<br>Атака: ${p.atk}<br>Защита: ${p.def}<br>Золото: ${p.coins}`;
+            let h = '';
+            p.inv.forEach((it, i) => {
+                h += `<div class="item-row" onclick="showItem(${i})"><span>${it.equipped ? '[E] ' : ''}${it.n}</span> <span>${it.stat}</span></div>`;
+            });
+            document.getElementById('inv-list').innerHTML = h || 'Пусто';
         }
 
         function tab(id) {
             document.querySelectorAll('.page').forEach(pg => pg.classList.remove('active'));
             document.querySelectorAll('.nav div').forEach(nv => nv.classList.remove('active'));
             document.getElementById(id).classList.add('active');
-            document.getElementById('nav-' + id.split('-')[0]).classList.add('active');
-            if(id !== 'loc-page') exitLoc();
+            document.getElementById('n-' + id.split('-')[0]).classList.add('active');
         }
 
-        const locs = {
-            forest: { n: "Лес", e: [{n: "Слайм", h: 40, a: 6, r: 20}, {n: "Волк", h: 80, a: 12, r: 50}] },
-            ruins: { n: "Руины", e: [{n: "Скелет", h: 130, a: 22, r: 130}, {n: "Лич", h: 350, a: 45, r: 500}] }
-        };
-
-        function enterLoc(k) {
-            document.getElementById('loc-select').style.display = 'none';
-            document.getElementById('enemy-view').style.display = 'block';
-            let h = '';
-            locs[k].e.forEach(en => {
-                h += `<button class="enemy-btn" onclick="startFight('${en.n}', ${en.h}, ${en.a}, ${en.r})">💀 ${en.n} (HP: ${en.h})</button>`;
-            });
-            document.getElementById('enemies-list').innerHTML = h;
+        function showItem(i) {
+            let it = p.inv[i];
+            document.getElementById('item-info').style.display = 'block';
+            document.getElementById('item-name').innerText = it.n;
+            document.getElementById('item-stat').innerText = `Тип: ${it.slot} | Бонус: +${it.stat}`;
+            let btn = document.getElementById('item-action');
+            btn.innerText = it.equipped ? "Снять" : "Надеть";
+            btn.onclick = () => {
+                if(!it.equipped) p.inv.forEach(x => { if(x.slot == it.slot) x.equipped = false; });
+                it.equipped = !it.equipped;
+                draw();
+                document.getElementById('item-info').style.display = 'none';
+            };
         }
 
-        function exitLoc() {
-            document.getElementById('loc-select').style.display = 'block';
-            document.getElementById('enemy-view').style.display = 'none';
-            document.getElementById('battle-view').style.display = 'none';
+        function openShop() {
+            let div = document.getElementById('sub-town');
+            div.style.display = 'block';
+            document.getElementById('sub-content').innerHTML = `
+                <h4>ЛАВКА</h4>
+                <button class="btn" onclick="buy('Стальной Меч', 10, 100)">Купить Меч (100 🪙)</button>
+                <button class="btn" onclick="alert('Продажа: выберите предмет в рюкзаке')">Продать</button>
+            `;
+        }
+
+        function buy(n, s, c) {
+            if(p.coins >= c) { p.coins -= c; p.inv.push({n:n, stat:s, slot:'weapon', equipped:false}); draw(); alert('Куплено!'); }
+            else alert('Мало денег!');
+        }
+
+        function openQuests() {
+            let div = document.getElementById('sub-town');
+            div.style.display = 'block';
+            let q = p.q.coins_task;
+            let status = q.done ? "ВЫПОЛНЕНО" : `${p.coins}/${q.goal}`;
+            document.getElementById('sub-content').innerHTML = `
+                <h4>КВЕСТЫ</h4>
+                <div class="card">
+                    <b>Накопить 150 монет</b><br>Прогресс: ${status}
+                    ${(!q.done && p.coins >= 150) ? '<button class="btn" onclick="claimQuest()">Забрать награду</button>' : ''}
+                </div>
+            `;
+        }
+
+        function claimQuest() {
+            p.q.coins_task.done = true;
+            p.coins += 50; p.lvl += 1;
+            draw(); openQuests();
         }
 
         function startFight(n, h, a, r) {
-            document.getElementById('enemy-view').style.display = 'none';
-            document.getElementById('battle-view').style.display = 'block';
-            document.getElementById('battle-res').style.display = 'none';
-            let l = document.getElementById('log');
-            l.innerHTML = 'Бой начался...<br>';
-            let ch = h, cp = p.hp;
-
-            let itv = setInterval(() => {
-                let d = Math.floor(p.atk * (0.8 + Math.random()*0.4));
-                ch -= d;
-                l.innerHTML += `Ты ударил на ${d}. Враг: ${Math.max(0, ch)} HP<br>`;
-                document.getElementById('enemy-hp').style.width = (ch/h*100)+'%';
-
-                if(ch <= 0) {
-                    clearInterval(itv);
-                    p.lvl++; p.coins += r; p.atk += 2; p.def += 1;
-                    document.getElementById('battle-res').style.display = 'block';
-                    document.getElementById('res-txt').innerHTML = `ПОБЕДА! +${r} 🪙`;
-                    return;
-                }
-
-                let ed = Math.max(2, a - Math.floor(p.def/4));
-                cp -= ed;
-                l.innerHTML += `<span style="color:var(--red)">Враг нанес ${ed} урона.</span><br>`;
-                document.getElementById('player-hp').style.width = (cp/p.maxHp*100)+'%';
-                l.scrollTop = l.scrollHeight;
-
-                if(cp <= 0) { clearInterval(itv); tg.close(); }
-            }, 800);
+            document.getElementById('loc-select').style.display = 'none';
+            document.getElementById('battle').style.display = 'block';
+            let log = document.getElementById('log');
+            log.innerHTML = "Бой начался!<br>";
+            setTimeout(() => {
+                p.coins += r;
+                log.innerHTML += `Победа! +${r} монет.`;
+                document.getElementById('save-btn').style.display = 'block';
+            }, 1000);
         }
 
-        function sendToBot() {
-            // Передаем данные боту
-            const data = JSON.stringify({lvl: p.lvl, coins: p.coins, atk: p.atk, def: p.def});
-            tg.sendData(data);
-            // Закрываем окно
+        function saveAll() {
+            tg.sendData(JSON.stringify(p));
             tg.close();
         }
 
