@@ -7,113 +7,158 @@
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        :root { --gold: #d4af37; --dark: #0a0a0a; --card: #151515; }
-        body {
-            background-color: var(--dark); color: #e0e0e0;
-            font-family: 'Roboto Mono', monospace; margin: 0; padding: 0;
-            height: 100vh; display: flex; flex-direction: column; overflow: hidden;
-        }
-        h1, h2 { font-family: 'Cinzel', serif; color: var(--gold); text-align: center; margin: 15px 0; }
-        .content { flex: 1; padding: 20px; display: none; overflow-y: auto; }
+        :root { --gold: #d4af37; --dark: #0a0a0a; --red: #ff4747; }
+        body { background: var(--dark); color: #e0e0e0; font-family: 'Roboto Mono', monospace; margin: 0; padding-bottom: 70px; }
+        .content { display: none; padding: 15px; }
         .content.active { display: block; }
+        .card { background: #151515; border: 1px solid #333; padding: 15px; border-radius: 12px; margin-bottom: 10px; }
+        .btn { background: #222; border: 1px solid #444; color: white; padding: 10px; width: 100%; margin-top: 5px; border-radius: 8px; text-align: left; }
+        
+        /* Бой */
+        #battle-ui { display: none; text-align: center; }
+        .hp-bar-bg { width: 100%; background: #333; height: 10px; margin: 5px 0; border-radius: 5px; }
+        .hp-bar-fill { height: 100%; background: var(--red); width: 100%; transition: 0.3s; border-radius: 5px; }
+        #log { background: #000; height: 150px; overflow-y: auto; font-size: 12px; padding: 10px; text-align: left; border: 1px solid #444; }
 
-        /* Меню */
-        .hero-card {
-            width: 150px; height: 200px; background: linear-gradient(180deg, #222, #050505);
-            border: 1px solid var(--gold); border-radius: 15px; margin: 0 auto 20px;
-            display: flex; justify-content: center; align-items: center; font-size: 80px;
-        }
-        .stats-grid { background: var(--card); padding: 15px; border-radius: 10px; border: 1px solid #333; }
-        .stat-line { display: flex; justify-content: space-between; margin-bottom: 8px; }
-        .val { color: var(--gold); font-weight: bold; }
-
-        /* Инвентарь */
-        .inv-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
-        .inv-slot { aspect-ratio: 1/1; background: #1a1a1a; border: 1px dashed #444; border-radius: 8px; }
-
-        /* Локации */
-        .loc-btn {
-            background: var(--card); border: 1px solid #333; color: white;
-            padding: 15px; margin-bottom: 12px; border-radius: 10px; width: 100%; text-align: left;
-        }
-        .loc-btn:active { border-color: var(--gold); background: #222; }
-
-        /* Навигация */
-        .nav-bar { background: #111; display: flex; justify-content: space-around; padding: 15px 0; border-top: 1px solid #333; }
-        .nav-item { color: #555; font-size: 11px; text-transform: uppercase; cursor: pointer; }
-        .nav-item.active { color: var(--gold); font-weight: bold; }
+        .nav { position: fixed; bottom: 0; width: 100%; background: #111; display: flex; justify-content: space-around; padding: 15px 0; border-top: 1px solid #333; }
+        .nav-btn { color: #666; font-size: 12px; }
+        .nav-btn.active { color: var(--gold); }
     </style>
 </head>
 <body>
 
-    <div id="tab-menu" class="content active">
+    <div id="menu" class="content active">
         <h1>Ancient RPG</h1>
-        <div class="hero-card">👤</div>
-        <div class="stats-grid" id="stats"></div>
+        <div class="card" id="player-stats"></div>
     </div>
 
-    <div id="tab-inv" class="content">
-        <h2>Инвентарь</h2>
-        <div class="inv-grid">
-            <div class="inv-slot"></div><div class="inv-slot"></div><div class="inv-slot"></div><div class="inv-slot"></div>
+    <div id="locations" class="content">
+        <h2>Локации</h2>
+        <div id="loc-list">
+            <div class="card">
+                <b>🌲 Лес Теней</b>
+                <p style="font-size: 10px; color: #888;">Здесь водятся слабые монстры.</p>
+                <button class="btn" onclick="showEnemies('лес')">Войти в локацию</button>
+            </div>
+            <div class="card">
+                <b>🏛 Руины</b>
+                <p style="font-size: 10px; color: #888;">Опасно! Древние стражи.</p>
+                <button class="btn" onclick="showEnemies('руины')">Войти в локацию</button>
+            </div>
+        </div>
+
+        <div id="enemy-list" style="display:none;">
+            <button class="btn" style="color: var(--gold)" onclick="backToLocs()">⬅ Назад к списку</button>
+            <h3 id="loc-title"></h3>
+            <div id="enemies-here"></div>
+        </div>
+
+        <div id="battle-ui">
+            <h2 id="enemy-name"></h2>
+            <div class="hp-bar-bg"><div id="e-hp" class="hp-bar-fill"></div></div>
+            <div class="hp-bar-bg"><div id="p-hp" class="hp-bar-fill" style="background: green"></div></div>
+            <div id="log"></div>
         </div>
     </div>
 
-    <div id="tab-loc" class="content">
-        <h2>Локации</h2>
-        <button class="loc-btn" onclick="fight('Лес', 15)">🌲 Лес <small>(Награда: 15 🪙)</small></button>
-        <button class="loc-btn" onclick="fight('Равнины', 40)">🌫 Равнины <small>(Награда: 40 🪙)</small></button>
-        <button class="loc-btn" onclick="fight('Руины', 120)">🏛 Руины <small>(Награда: 120 🪙)</small></button>
-    </div>
-
-    <div class="nav-bar">
-        <div class="nav-item active" onclick="openTab('menu', this)">Меню</div>
-        <div class="nav-item" onclick="openTab('inv', this)">Инвентарь</div>
-        <div class="nav-item" onclick="openTab('loc', this)">Локации</div>
+    <div class="nav">
+        <div class="nav-btn active" onclick="tab('menu')">Герой</div>
+        <div class="nav-btn" onclick="tab('locations')">Поход</div>
     </div>
 
     <script>
         const tg = window.Telegram.WebApp;
-        tg.expand();
-
         const params = new URLSearchParams(window.location.search);
-        let player = {
+        let p = {
             lvl: parseInt(params.get('lvl')) || 1,
-            hp: parseInt(params.get('hp')) || 100,
-            def: parseInt(params.get('def')) || 10,
-            coins: parseInt(params.get('coins')) || 0
+            atk: parseInt(params.get('atk')) || 10,
+            def: parseInt(params.get('def')) || 15,
+            coins: parseInt(params.get('coins')) || 0,
+            hp: 100, maxHp: 100
         };
 
-        function render() {
-            document.getElementById('stats').innerHTML = `
-                <div class="stat-line"><span>Уровень</span> <span class="val">${player.lvl}</span></div>
-                <div class="stat-line"><span>Здоровье</span> <span class="val" style="color:#ff4747">${player.hp}/100</span></div>
-                <div class="stat-line"><span>Защита</span> <span class="val" style="color:#47a1ff">${player.def}</span></div>
-                <div class="stat-line"><span>Монеты</span> <span class="val" style="color:#ffd700">${player.coins} 🪙</span></div>
+        const enemies = {
+            'лес': [
+                { name: 'Гоблин', hp: 40, atk: 5, reward: 20 },
+                { name: 'Волк', hp: 60, atk: 8, reward: 45 }
+            ],
+            'руины': [
+                { name: 'Скелет', hp: 120, atk: 15, reward: 100 },
+                { name: 'Голем', hp: 300, atk: 25, reward: 300 }
+            ]
+        };
+
+        function updateStats() {
+            document.getElementById('player-stats').innerHTML = `
+                <p>Уровень: ${p.lvl}</p>
+                <p>Урон: ${p.atk}</p>
+                <p>Монеты: ${p.coins} 🪙</p>
             `;
         }
 
-        function openTab(name, el) {
+        function tab(id) {
             document.querySelectorAll('.content').forEach(c => c.classList.remove('active'));
-            document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
-            document.getElementById('tab-' + name).classList.add('active');
-            el.classList.add('active');
+            document.getElementById(id).classList.add('active');
+            backToLocs();
         }
 
-        function fight(loc, reward) {
-            player.coins += reward;
-            render();
-            tg.HapticFeedback.notificationOccurred('success');
-
-            // Отправка боту для сохранения
-            tg.sendData(JSON.stringify({
-                action: 'save_progress',
-                coins: player.coins,
-                lvl: player.lvl
-            }));
+        function showEnemies(locKey) {
+            document.getElementById('loc-list').style.display = 'none';
+            document.getElementById('enemy-list').style.display = 'block';
+            document.getElementById('loc-title').innerText = locKey.toUpperCase();
+            let html = '';
+            enemies[locKey].forEach(e => {
+                html += `<button class="btn" onclick="startFight('${e.name}', ${e.hp}, ${e.atk}, ${e.reward})">
+                    ⚔ Напасть на: ${e.name} (HP: ${e.hp}, ATK: ${e.atk})
+                </button>`;
+            });
+            document.getElementById('enemies-here').innerHTML = html;
         }
 
-        render();
+        function backToLocs() {
+            document.getElementById('loc-list').style.display = 'block';
+            document.getElementById('enemy-list').style.display = 'none';
+            document.getElementById('battle-ui').style.display = 'none';
+        }
+
+        function startFight(name, eHp, eAtk, reward) {
+            document.getElementById('enemy-list').style.display = 'none';
+            document.getElementById('battle-ui').style.display = 'block';
+            document.getElementById('enemy-name').innerText = name;
+            let curE = eHp, curP = p.hp;
+            let log = document.getElementById('log');
+            log.innerHTML = 'Бой начался!<br>';
+
+            const iter = setInterval(() => {
+                let dmgP = Math.floor(p.atk * (0.8 + Math.random() * 0.4));
+                curE -= dmgP;
+                log.innerHTML += `Ты ударил на ${dmgP}. У врага ${Math.max(0, curE)} HP<br>`;
+                document.getElementById('e-hp').style.width = (curE/eHp*100) + '%';
+
+                if(curE <= 0) {
+                    clearInterval(iter);
+                    p.coins += reward; p.lvl += 1; p.atk += 2;
+                    log.innerHTML += `<b>ПОБЕДА! +${reward} монет.</b>`;
+                    updateStats();
+                    setTimeout(() => tg.sendData(JSON.stringify({action:'save_progress', lvl:p.lvl, coins:p.coins, atk:p.atk})), 2000);
+                    return;
+                }
+
+                let dmgE = Math.max(1, eAtk - Math.floor(p.def/5));
+                curP -= dmgE;
+                log.innerHTML += `Враг ударил на ${dmgE}. У тебя ${Math.max(0, curP)} HP<br>`;
+                document.getElementById('p-hp').style.width = (curP/p.maxHp*100) + '%';
+                log.scrollTop = log.scrollHeight;
+
+                if(curP <= 0) {
+                    clearInterval(iter);
+                    log.innerHTML += `ТЫ ПРОИГРАЛ...`;
+                    setTimeout(() => tg.close(), 2000);
+                }
+            }, 800);
+        }
+
+        updateStats();
     </script>
 </body>
 </html>
